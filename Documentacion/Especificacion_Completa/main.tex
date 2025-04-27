@@ -138,50 +138,9 @@ tabla de contenidos o anexos. Recuerde que el resumen es una descripci\'on corta
   \setcounter{page}{1}
   \tableofcontents
 
-  %+++++++++++++++++++++++
-  \section{previa}
-  \label{sec:previa}
+  \newpage
 
-  Categoría 3: Alfombra de baile interactiva Tutor: Josefina Lema Cantidad de proyectos: hasta 3 Descripción El objetivo de esta categoría de proyectos es diseñar un sistema que emule una alfombra de baile interactiva, como la que se ve en la figura. Se deberá programar un sistema embebido capaz de detectar las interacciones del usuario y compararlos con una secuencia desplegada en una pantalla. En un primer lugar, se desarrollará una aplicación sencilla que muestre una secuencia de flechas en una pantalla OLED, indicando los pasos que el usuario debe seguir. 
-La detección de los pasos se realizará mediante un teclado estándar matricial, registrando cuándo y que tecla fue seleccionada. Se debe llevar la cuenta del puntaje obtenido dependiendo de si el usuario presiona la tecla correcta en un rango de tiempo aceptable. 
-
-El juego finaliza cuando se completa una secuencia de longitud fija o se pierde si el usuario se equivoca una determinada cantidad de veces. 
-
-
-
-A este sistema se le pueden agregar diferentes variantes:
-\begin{itemize}
-    \item Variar el puntaje dependiendo de la precisión con la que se presiona: si el usuario presiona el botón correcto en el momento exacto se le asigna la mayor cantidad de puntos. Cuanto mayor sea el desfasaje de tiempo menor es la cantidad de puntos.
-    \item Desarrollar distintas dificultades entre las cuales el usuario elige al iniciar el juego.
-    \item Aumentar la dificultad durante una partida ya sea aumentando la velocidad o haciendo que la secuencia tenga más de una flecha a la vez.
-\end{itemize}
-
-El sistema consiste en:
-\begin{itemize}
-    \item Launchpad MSP-EXP430G2ET
-    \item Display OLED SSD1306: se comunica con el microcontrolador utilizando comunicación I2C [1]. Se utilizará para desplegar las flechas de direcciones, así como las instrucciones de inicio y fin. El Proyecto [2,3] desarrolló un driver para el display OLED y una interfaz gráfica.
-    \item Teclado matricial: se utiliza como interfaz de entrada para el usuario. Como alternativa se podrá utilizar el teclado de una PC mediante comunicación UART.
-\end{itemize}
-
-En años anteriores en el curso se implementaron otros juegos, ver por ejemplo Tetris controlado por UART [4,5] y Viborita [6].
-
-Referencias 
-
-[1] https://www.robotec.com.uy/productos/TX399 
-
-[2] Heart Rate and Oxygen Saturation meter (HeroxS). Proyecto con manejo de display OLED. Proyecto de Sisem, 2022. 
-
-[3] R D’eboli, J Schmitd, R Garcia Ordeig, J Oreggioni, HEROxS: Heart Rate and Oxygen Saturation Meter, Congreso Argentino de Sistemas Embebidos (CASE2023), Argentina, 10-11 ago, 2023 
-
-[4] UARTetris: Tetris controlado por UART, Proyecto Sisem 2021 
-
-[5] J. Pérez Mauri, J. Berniz, F. Morán, J. Oreggioni. U-Tetris: Tetris controlado por UART, Congreso Argentino de Sistemas Embebidos, CASE2021, Evento virtual, Argentina, 1-2 nov, 2021 
-
-[6] Proyecto Sisem 2010 “Viborita” (CCuP)
-
-
-
-\subsection{secciones a desarrollar}
+\section{Secciones a desarrollar}
 \begin{itemize}
   \item Nombre del proyecto: corto y descriptivo
   \item Nombre de los integrantes y tutor
@@ -217,7 +176,7 @@ Referencias
   \newpage
   \section{Descripción del problema}
   \label{sec:descripcion}
-  La industria de los videojuegos y los sistemas interactivos ha tenido un crecimiento explosivo en las últimas décadas, abarcando no sólo consolas tradicionales, sino también dispositivos móviles, sistemas de realidad aumentada y plataformas físicas interactivas. Dentro de esta última categoría, destacan los juegos que combinan ejercicio físico y respuesta motora rápida, como las alfombras de baile interactivas. Uno de los casos más emblemáticos es el juego Dance Dance Revolution, lanzado en 1998 por Konami, que popularizó el uso de plataformas sensibles a la presión para seguir secuencias musicales en tiempo real.
+  La industria de los videojuegos y los sistemas interactivos han tenido un crecimiento explosivo en las últimas décadas, abarcando no sólo consolas tradicionales, sino también dispositivos móviles, sistemas de realidad aumentada y plataformas físicas interactivas. Dentro de esta última categoría, destacan los juegos que combinan ejercicio físico y respuesta motora rápida, como las alfombras de baile interactivas. Uno de los casos más emblemáticos es el juego Dance Dance Revolution, lanzado en 1998 por Konami, que popularizó el uso de plataformas sensibles a la presión para seguir secuencias musicales en tiempo real.
 
   Estos sistemas, además de brindar entretenimiento, fomentan la actividad física y la coordinación motora, lo que los hace atractivos para públicos de todas las edades. A su vez, presentan desafíos interesantes desde el punto de vista de los sistemas embebidos: detección de eventos en tiempo real, evaluación de precisión temporal, control de interfaz gráfica, entre otros.
 
