@@ -4,8 +4,8 @@
 #include <timer_hw.h>
 
 
-const unsigned int  CRYSTAL_FREQ = 32768;
-const unsigned int  VLO_FREQ     = 12000;
+#define CRYSTAL_FREQ = 32768;
+#define VLO_FREQ     = 12000;
 
 void disable_interrupt_timerhw() {
     TACCTL0 &= ~CCIE;
@@ -17,7 +17,7 @@ void enable_interrupt_timerhw() {
 
 void init_timer(timer_source_t source) {
     /* Seleccionamos el source de ACLK (LFXT1 o VLO). */
-    /* Seteamos el TACCR0 para que interrumpa cada 250ms. */    
+    /* Seteamos el TACCR0 para que interrumpa cada 250ms. */
     BCSCTL3 = (BCSCTL3 & ~LFXT1S_3);
     switch (source) {
         case TIMER_SOURCE_CRYSTAL:
