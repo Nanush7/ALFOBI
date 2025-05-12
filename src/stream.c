@@ -1,4 +1,6 @@
 #include <stream.h>
+#include <string.h>
+#include <assert_test.h>
 
 /* Stream circular de bytes. */
 uint8_t stream[SEND_STREAM_SIZE];
@@ -56,7 +58,7 @@ void add_to_stream(uint8_t* msg) {
     circular_strcpy(msg);
 
     stream_end += 1 + strlen(msg);
-    if (stream_end > stream_SIZE)
+    if (stream_end > SEND_STREAM_SIZE)
         stream_end = 0;
 
     ASSERT(stream_end != stream_start);
@@ -66,7 +68,7 @@ uint8_t stream_is_empty(void) {
     return stream_end == stream_start;
 }
 
-uint8_t read_byte_from_stream(uint8_t res) {
+uint8_t read_byte_from_stream(void) {
     ASSERT(!stream_is_empty());
 
     return stream[stream_start];

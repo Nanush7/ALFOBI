@@ -2,6 +2,7 @@
 #include <msp430.h>
 #include <assert_test.h>
 #include <stream.h>
+#include <stdint.h>
 
 uint8_t start_sent;
 
@@ -32,6 +33,7 @@ void init_i2c(uint8_t slave_addr) {
     /* 3. Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
     P1SEL2 |= BIT6 | BIT7;
+    P1REN |= BIT6 | BIT7;
 
     /* 4. Liberamos la USCI. */
     UCB0CTL1 &= ~UCSWRST;
@@ -50,14 +52,14 @@ void send_message(uint8_t* message) {
 
 /* Rutina de atención de la interrupción de buffer vacío */
 #pragma vector=USCIAB0TX_VECTOR
-__interupt void FREE_TX_BUFFER(void) {
+__interrupt void FREE_TX_BUFFER(void) {
     /* Si no tenemos más mensajes para enviar, desactivamos estas interrupciones. */
     if (stream_is_empty()) {
         IE2 &= ~UCB0TXIE;
         return;
     }
 
-    if (is_start_of_message() && !stzart_sent) {
+    if (is_start_of_message() && !start_sent) {
         UCB0CTL1 |= UCTXSTT;
         start_sent = 1;
     }

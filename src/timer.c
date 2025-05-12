@@ -64,7 +64,7 @@ void get_time(time_t* buff_time) {
     disable_interrupt_timerhw();
     buff_time->hours        = current_time.hours;
     buff_time->minutes      = current_time.minutes;
-    buff_time->segundos     = current_time.segundos;
+    buff_time->seconds     = current_time.seconds;
     buff_time->miliseconds = current_time.miliseconds;
     enable_interrupt_timerhw();
 }

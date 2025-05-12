@@ -47,7 +47,7 @@ uint8_t stream_is_empty(void);
  *
  * @return El caracter leído del stream.
  */
-uint8_t read_byte_from_stream(uint8_t res);
+uint8_t read_byte_from_stream(void);
 
 /**
 * @brief Avanza el cursor en el stream circular.
@@ -66,6 +66,6 @@ void reset_cursor(void);
  *
  * @return Retorna 1 si el cursor se encuentra en el inicio del primer mensaje del stream, o 0 en caso contrario.
  */
-uint8_t is_start_of_message(void)
+uint8_t is_start_of_message(void);
 
-#endif _STREAM_H_
+#endif

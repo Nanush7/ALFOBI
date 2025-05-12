@@ -11,13 +11,13 @@
   * @brief configura la USCI_B en modo I2C.
   * Se usa como fuente de reloj el SMCLK, que a su vez usa como fuente el VLO.
   */
-void init_i2c();
+void init_i2c(uint8_t slave_address);
 
 /**
  * @brief Inicia el envío de mensaje por I2C.
  * @pre message debe ser un string terminado con \n
  */
-void send_message(uint8_t slave_address, uint8_t* message);
+void send_message(uint8_t* message);
 
 
 #endif /* I2C_H_ */

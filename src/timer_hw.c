@@ -4,8 +4,8 @@
 #include <timer_hw.h>
 
 
-#define CRYSTAL_FREQ = 32768;
-#define VLO_FREQ     = 12000;
+#define CRYSTAL_FREQ 32768
+#define VLO_FREQ     12000
 
 void disable_interrupt_timerhw() {
     TACCTL0 &= ~CCIE;
