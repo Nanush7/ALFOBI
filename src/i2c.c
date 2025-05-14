@@ -36,9 +36,6 @@ void init_i2c(uint8_t slave_addr) {
     P1REN  |= BIT6 | BIT7;
     P1OUT  |= BIT6 | BIT7;
 
-    P2SEL &= ~BIT1 + ~BIT2; //Colocamos P2.1 y P2.2 en la funcion reservada,
-    P2SEL2 |= BIT1 + BIT2; // para que dejen pasar las señales de la placa conectada a ellos
-
     /* 4. Liberamos la USCI. */
     UCB0CTL1 &= ~UCSWRST;
 }
@@ -52,7 +49,7 @@ void send_message(uint8_t* message) {
 
     /* Activar interrupciones de buffer vacío. */
     IE2 |= UCB0TXIE;
-    UCB0CTL1 |= UCTXSTT;
+    UCB0CTL1 |= UCTXSTT; 
 }
 
 /* Rutina de atención de la interrupción de buffer vacío */

@@ -5,15 +5,11 @@
 #include <string.h>
 
 int main() {
-    /* Paramos el gordo perro guardián. */
+    /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
     init_i2c(0);
     __enable_interrupt();
-
-    /* Esperamos por alguna razón que no será aclarada acá. */
-    __delay_cycles(1000);
-
 
     uint8_t message[20] = "hola";
     send_message(message);
