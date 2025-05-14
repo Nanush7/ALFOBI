@@ -2,12 +2,13 @@
 #include "stream.h"
 #include <i2c.h>
 #include <msp430.h>
+#include <string.h>
 
 int main() {
     /* Paramos el gordo perro guardián. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    init_i2c(0x7F);
+    init_i2c(0);
     __enable_interrupt();
 
     /* Esperamos por alguna razón que no será aclarada acá. */
@@ -22,8 +23,7 @@ int main() {
 
     strcpy(message, "adios");
     while(1) {
-        __delay_cycles(100000);
-        if (stream_free_space() > "10") {
+        if (stream_free_space() > 10) {
             send_message(message);
         } 
     }

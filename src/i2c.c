@@ -8,12 +8,7 @@ uint8_t start_sent;
 
 void init_i2c(uint8_t slave_addr) {
     start_sent = 0;
-    /* Guardamos la dirección del esclavo. */
-    UCB0I2CSA = slave_addr;
-
-    /* Seleccionamos LFXT1 como source del SMCLK */
-    BCSCTL2 |= SELS;
-
+    
     /* Se usa DCO como fuente de SMCLK por defecto */
     /* Configuramos DCO con una frecuencia típica de 0.30MHz */
     /* DCO = 3, RSEL = 3, MOD = 0 */
@@ -23,8 +18,13 @@ void init_i2c(uint8_t slave_addr) {
     /* 1. Pausamos la lógica de la USCI */
     UCB0CTL1 |= UCSWRST;
 
+    /* Guardamos la dirección del esclavo. */
+    UCB0I2CSA = slave_addr;
+
     /* Configuramos la USCI_B en modo I2C */
-    UCB0CTL0 |= UCMODE_3;
+    /* Configuramos la comunicación sincronizada. */
+    /* Configuramos la USCI_B en modo Master. */
+    UCB0CTL0 |= UCMODE_3 | UCSYNC | UCMST;
 
     /* 2.1 Seleccionamos SMCLK como fuente para la USCI */
     /* 2.2 Configuramos la USCI en modo master transmitter. */
@@ -33,7 +33,11 @@ void init_i2c(uint8_t slave_addr) {
     /* 3. Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
     P1SEL2 |= BIT6 | BIT7;
-    P1REN |= BIT6 | BIT7;
+    P1REN  |= BIT6 | BIT7;
+    P1OUT  |= BIT6 | BIT7;
+
+    P2SEL &= ~BIT1 + ~BIT2; //Colocamos P2.1 y P2.2 en la funcion reservada,
+    P2SEL2 |= BIT1 + BIT2; // para que dejen pasar las señales de la placa conectada a ellos
 
     /* 4. Liberamos la USCI. */
     UCB0CTL1 &= ~UCSWRST;
@@ -48,6 +52,7 @@ void send_message(uint8_t* message) {
 
     /* Activar interrupciones de buffer vacío. */
     IE2 |= UCB0TXIE;
+    UCB0CTL1 |= UCTXSTT;
 }
 
 /* Rutina de atención de la interrupción de buffer vacío */
@@ -70,6 +75,7 @@ __interrupt void FREE_TX_BUFFER(void) {
         start_sent = 0;
         if (stream_is_empty()) {
             UCB0CTL1 |= UCTXSTP;
+            IE2 &= ~UCB0TXIE;
         }
     } else {
         UCB0TXBUF = next_byte;
