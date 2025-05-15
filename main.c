@@ -8,7 +8,7 @@ int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    init_i2c(0);
+    init_i2c(0x3C);
     __enable_interrupt();
 
     uint8_t message[20] = "hola";
