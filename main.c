@@ -1,8 +1,7 @@
-#include "intrinsics.h"
-#include "stream.h"
-#include <i2c.h>
 #include <msp430.h>
-#include <string.h>
+#include "intrinsics.h"
+#include "i2c.h"
+#include "display.h"
 
 int main() {
     /* Paramos el Watchdog. */
@@ -11,18 +10,8 @@ int main() {
     init_i2c(0x3C);
     __enable_interrupt();
 
-    uint8_t message[20] = "hola";
-    send_message(message);
-
-    strcpy(message, "buenas");
-    send_message(message);
-
-    strcpy(message, "adios");
-    while(1) {
-        if (stream_free_space() > 10) {
-            send_message(message);
-        } 
-    }
+    init_display();
+    while(1);
 
     return 0;
 }

@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#define SEND_STREAM_SIZE 50
+#define SEND_STREAM_SIZE 60
 
  /**
   * @brief Inicializa el stream circular.

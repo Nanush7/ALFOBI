@@ -10,36 +10,36 @@ uint8_t start_sent;
 void init_i2c(uint8_t slave_addr) {
     start_sent = 0;
     
-    /* 3. Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
+    /* Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
     P1SEL2 |= BIT6 | BIT7;
-    P1REN  |= BIT6 | BIT7;
-    P1OUT  |= BIT6 | BIT7;
+
+    /* Pausamos la USCI. */
+    UCB0CTL1 |= UCSWRST;
 
     /* Se usa DCO como fuente de SMCLK por defecto */
     /* Configuramos DCO con una frecuencia típica de 0.30MHz */
     /* DCO = 3, RSEL = 3, MOD = 0 */
-    BCSCTL1 |= RSEL1 | RSEL2;
-    DCOCTL  |= DCO1  | DCO2;
+    /* BCSCTL1 |= RSEL1 | RSEL2; */
+    /** TODO: Ver si podemos usar más de 100kHz. Tendríamos que cambiar la config del display también.
+    DCOCTL  |= DCO1  | DCO2; */
 
-    /* 1. Pausamos la lógica de la USCI */
-    UCB0CTL1 |= UCSWRST;
+    /* Configuramos la USCI_B: */
+    /* Modo master + modo I2C + comunicación sincronizada. */
+    UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;
 
-    /* Configuramos la USCI_B en modo I2C */
-    /* Configuramos la comunicación sincronizada. */
-    /* Configuramos la USCI_B en modo Master. */
-    UCB0CTL0 |= UCMODE_3 | UCSYNC | UCMST;
-
-    /* 2.1 Seleccionamos SMCLK como fuente para la USCI */
-    /* 2.2 Configuramos la USCI en modo master transmitter. */
+    /* Seleccionamos SMCLK como fuente para la USCI a 100kHz */
     UCB0CTL1 |= UCSSEL_2;
+    UCB0BR0 = 12;
+    UCB0BR1 = 0;
 
     /* Guardamos la dirección del esclavo. */
     UCB0I2CSA = slave_addr;
 
-    /* 4. Liberamos la USCI. */
+    /* Liberamos la USCI. */
     UCB0CTL1 &= ~UCSWRST;
 
+    /* Habilitamos interrupciones. */
     IE2 |= UCB0TXIE;
 }
 
@@ -50,9 +50,9 @@ void send_message(uint8_t* message) {
 
     if (!empty_stream) return;
 
-    /* Activar interrupciones de buffer vacío. */
-    // IE2 |= UCB0TXIE;
-    UCB0CTL1 |= UCTR | UCTXSTT; 
+    /* Esperamos a que no hay STOP pendiene y enviamos START en modo de transmisión */
+    while (UCB0CTL1 & UCTXSTP);
+    UCB0CTL1 |= UCTR | UCTXSTT;
 }
 
 /* Rutina de atención de la interrupción de buffer vacío */
@@ -76,7 +76,6 @@ __interrupt void FREE_TX_BUFFER(void) {
         start_sent = 0;
         if (stream_is_empty()) {
             UCB0CTL1 |= UCTXSTP;
-            // IE2 &= ~UCB0TXIE;
             IFG2 &= ~UCB0TXIFG;
         }
     } else {
@@ -91,4 +90,5 @@ __interrupt void NACK_ISR(void) {
     /* El cursor vuelve al principio del mensaje fallido. */
     reset_cursor();
     /** TODO: Asumimos que se ejecuta inmediatamente la ISR de buffer vacío. */
+    /** TODO: No parece funcionar esta ISR, testear. */
 }

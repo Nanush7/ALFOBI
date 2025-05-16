@@ -49,7 +49,9 @@ void circular_strcpy(uint8_t* msg) {
             index = 0;
         }
     }
-    ASSERT(stream[index] == '\0');
+    /** TODO: Para qué está este assert? Independientemente del
+     * propósito, está mal porque podría haber un \0 basura.
+     *ASSERT(stream[index] == '\0'); */
 }
 
 void add_to_stream(uint8_t* msg) {
@@ -57,9 +59,9 @@ void add_to_stream(uint8_t* msg) {
 
     circular_strcpy(msg);
 
-    stream_end += 1 + strlen(msg);
-    if (stream_end > SEND_STREAM_SIZE)
-        stream_end = 0;
+    stream_end += strlen(msg) + 1;
+    if (stream_end >= SEND_STREAM_SIZE)
+        stream_end -= SEND_STREAM_SIZE;
 
     ASSERT(stream_end != stream_start);
 }
@@ -71,7 +73,7 @@ uint8_t stream_is_empty(void) {
 uint8_t read_byte_from_stream(void) {
     ASSERT(!stream_is_empty());
 
-    return stream[stream_start];
+    return stream[cursor];
 }
 
 void increment_cursor(void) {
