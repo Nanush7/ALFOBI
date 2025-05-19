@@ -1,0 +1,82 @@
+#include <stdint.h>
+#include "display.h"
+#include "i2c.h"
+
+#define LCDWIDTH        128
+#define LCDHEIGHT            64
+#define I2C_ADDRESS          0x3C
+#define CONTROL_DATA         0xC0
+#define CONTROL_COMMAND      0x80
+
+typedef enum SSD1306_command {
+    SET_CONTRAST            = 0x81,
+    DISPLAY_ALL_ON_RESUME   = 0xA4,
+    DISPLAY_ALLON           = 0xA5,
+    NORMAL_DISPLAY          = 0xA6,
+    INVERT_DISPLAY          = 0xA7,
+    DISPLAY_OFF             = 0xAE,
+    DISPLAY_ON              = 0xAF,
+    SET_DISPLAY_OFFSET      = 0xD3,
+    SET_COM_PINS            = 0xDA,
+    SET_VCOM_DETECT         = 0xDB,
+    SET_DISPLAY_CLOCK_DIV   = 0xD5,
+    SET_PRECHARGE           = 0xD9,
+    SET_MULTIPLEX           = 0xA8,
+    SET_LOW_COLUMN          = 0x00,
+    SET_HIGH_COLUMN         = 0x10,
+    SET_START_LINE          = 0x40,
+    MEMORY_MODE             = 0x20,
+    COLUMN_ADDR             = 0x21,
+    PAGE_ADDR               = 0x22,
+    COM_SCAN_INC            = 0xC0,
+    COM_SCAN_DEC            = 0xC8,
+    SEG_REMAP               = 0xA0,
+    CHARGE_PUMP             = 0x8D,
+    EXTERNAL_VCC            = 0x1,
+    SWITCH_CAP_VCC          = 0x2,
+    DEACTIVATE_SCROLL       = 0x2E
+} SSD1306_command_t;
+
+void command(SSD1306_command_t command) {
+    uint8_t com[2];
+    com[0] = CONTROL_COMMAND;
+    com[1] = command;
+    send_message(com);
+}
+
+void init_display() {
+    // SSD1306 init sequence
+    command(DISPLAY_OFF);
+    command(SET_DISPLAY_CLOCK_DIV);
+    command(0x80);                                 // the suggested ratio 0x80
+
+    command(SET_MULTIPLEX);
+    command(LCDHEIGHT - 1);
+
+    command(SET_DISPLAY_OFFSET);
+    command(0x0);                                  // no offset
+    command(SET_START_LINE);                       // line #0
+    command(CHARGE_PUMP);
+    command(0x14);                                 // generate high voltage from 3.3v line internally
+    command(MEMORY_MODE);
+    command(0x00);                                 // 0x0 act like ks0108
+    command(SEG_REMAP | 0x1);
+    command(COM_SCAN_DEC);
+
+    command(SET_COM_PINS);
+    command(0x12);
+
+    command(SET_CONTRAST);
+    command(0xCF);
+
+    command(SET_PRECHARGE);
+    command(0xF1);
+    command(SET_VCOM_DETECT);
+    command(0x40);
+    command(DISPLAY_ALL_ON_RESUME);
+    command(NORMAL_DISPLAY);
+
+    command(DEACTIVATE_SCROLL);
+
+    command(DISPLAY_ON);
+}
