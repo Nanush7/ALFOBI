@@ -2,8 +2,8 @@
  * @brief funciones para posibilitar comunicación por I2C.
  * Se implementa un master transmitter con slave adresses de 7 bits y SMCLK.
  */
-#ifndef I2C_H_
-#define I2C_H_
+#ifndef I2C_H
+#define I2C_H
 
 #include <stdint.h>
 
@@ -15,9 +15,8 @@ void init_i2c(uint8_t slave_address);
 
 /**
  * @brief Inicia el envío de mensaje por I2C.
- * @pre message debe ser un string terminado con \n
  */
-void send_message(uint8_t* message);
+void send_message(uint8_t message[2]);
 
 
-#endif /* I2C_H_ */
+#endif /* I2C_H */

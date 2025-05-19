@@ -2,84 +2,81 @@
 #include "display.h"
 #include "i2c.h"
 
-#define SSD1306_I2C_ADDRESS             0x3C
-#define SSD1306_LCDWIDTH                128
-#define SSD1306_LCDHEIGHT               64
+#define LCDWIDTH        128
+#define LCDHEIGHT            64
+#define I2C_ADDRESS          0x3C
+#define CONTROL_DATA         0xC0
+#define CONTROL_COMMAND      0x80
 
-#define SSD1306_SETCONTRAST             0x81
-#define SSD1306_DISPLAYALLON_RESUME     0xA4
-#define SSD1306_DISPLAYALLON            0xA5
-#define SSD1306_NORMALDISPLAY           0xA6
-#define SSD1306_INVERTDISPLAY           0xA7
-#define SSD1306_DISPLAYOFF              0xAE
-#define SSD1306_DISPLAYON               0xAF
-#define SSD1306_SETDISPLAYOFFSET        0xD3
-#define SSD1306_SETCOMPINS              0xDA
-#define SSD1306_SETVCOMDETECT           0xDB
-#define SSD1306_SETDISPLAYCLOCKDIV      0xD5
-#define SSD1306_SETPRECHARGE            0xD9
-#define SSD1306_SETMULTIPLEX            0xA8
-#define SSD1306_SETLOWCOLUMN            0x00
-#define SSD1306_SETHIGHCOLUMN           0x10
-#define SSD1306_SETSTARTLINE            0x40
-#define SSD1306_MEMORYMODE              0x20
-#define SSD1306_COLUMNADDR              0x21
-#define SSD1306_PAGEADDR                0x22
-#define SSD1306_COMSCANINC              0xC0
-#define SSD1306_COMSCANDEC              0xC8
-#define SSD1306_SEGREMAP                0xA0
-#define SSD1306_CHARGEPUMP              0x8D
-#define SSD1306_EXTERNALVCC             0x1
-#define SSD1306_SWITCHCAPVCC            0x2
-// Scroll functionality.
-#define SSD1306_ACTIVATE_SCROLL                         0x2F
-#define SSD1306_DEACTIVATE_SCROLL                       0x2E
-#define SSD1306_SET_VERTICAL_SCROLL_AREA                0xA3
-#define SSD1306_RIGHT_HORIZONTAL_SCROLL                 0x26
-#define SSD1306_LEFT_HORIZONTAL_SCROLL                  0x27
-#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL    0x29
-#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL     0x2A
+typedef enum SSD1306_command {
+    SET_CONTRAST            = 0x81,
+    DISPLAY_ALL_ON_RESUME   = 0xA4,
+    DISPLAY_ALLON           = 0xA5,
+    NORMAL_DISPLAY          = 0xA6,
+    INVERT_DISPLAY          = 0xA7,
+    DISPLAY_OFF             = 0xAE,
+    DISPLAY_ON              = 0xAF,
+    SET_DISPLAY_OFFSET      = 0xD3,
+    SET_COM_PINS            = 0xDA,
+    SET_VCOM_DETECT         = 0xDB,
+    SET_DISPLAY_CLOCK_DIV   = 0xD5,
+    SET_PRECHARGE           = 0xD9,
+    SET_MULTIPLEX           = 0xA8,
+    SET_LOW_COLUMN          = 0x00,
+    SET_HIGH_COLUMN         = 0x10,
+    SET_START_LINE          = 0x40,
+    MEMORY_MODE             = 0x20,
+    COLUMN_ADDR             = 0x21,
+    PAGE_ADDR               = 0x22,
+    COM_SCAN_INC            = 0xC0,
+    COM_SCAN_DEC            = 0xC8,
+    SEG_REMAP               = 0xA0,
+    CHARGE_PUMP             = 0x8D,
+    EXTERNAL_VCC            = 0x1,
+    SWITCH_CAP_VCC          = 0x2,
+    DEACTIVATE_SCROLL       = 0x2E
+} SSD1306_command_t;
 
-void command(uint8_t comando) {
-    uint8_t com[3];
-    com[0] = 0x80;
-    com[1] = comando;
-    com[2] = 0x00;
+void command(SSD1306_command_t command) {
+    uint8_t com[2];
+    com[0] = CONTROL_COMMAND;
+    com[1] = command;
     send_message(com);
 }
 
 void init_display() {
-        // SSD1306 init sequence
-    command(SSD1306_DISPLAYOFF);                                // 0xAE
-    command(SSD1306_SETDISPLAYCLOCKDIV);                        // 0xD5
-    command(0x80);                                              // the suggested ratio 0x80
+    // SSD1306 init sequence
+    command(DISPLAY_OFF);
+    command(SET_DISPLAY_CLOCK_DIV);
+    command(0x80);                                 // the suggested ratio 0x80
 
-    command(SSD1306_SETMULTIPLEX);                              // 0xA8
-    command(SSD1306_LCDHEIGHT - 1);
+    command(SET_MULTIPLEX);
+    command(LCDHEIGHT - 1);
 
-    command(SSD1306_SETDISPLAYOFFSET);                          // 0xD3
-    command(0x0);                                               // no offset
-    command(SSD1306_SETSTARTLINE | 0x0);                        // line #0
-    command(SSD1306_CHARGEPUMP);                                // 0x8D
-    command(0x14);                                              // generate high voltage from 3.3v line internally
-    command(SSD1306_MEMORYMODE);                                // 0x20
-    command(0x00);                                              // 0x0 act like ks0108
-    command(SSD1306_SEGREMAP | 0x1);
-    command(SSD1306_COMSCANDEC);
+    command(SET_DISPLAY_OFFSET);
+    command(0x0);                                  // no offset
+    command(SET_START_LINE);                       // line #0
+    command(CHARGE_PUMP);
+    command(0x14);                                 // generate high voltage from 3.3v line internally
+    command(MEMORY_MODE);
+    command(0x00);                                 // 0x0 act like ks0108
+    command(SEG_REMAP | 0x1);
+    command(COM_SCAN_DEC);
 
-    command(SSD1306_SETCOMPINS);                                // 0xDA
+    command(SET_COM_PINS);
     command(0x12);
-    command(SSD1306_SETCONTRAST);                               // 0x81
+
+    command(SET_CONTRAST);
     command(0xCF);
 
-    command(SSD1306_SETPRECHARGE);                              // 0xd9
+    command(SET_PRECHARGE);
     command(0xF1);
-    command(SSD1306_SETVCOMDETECT);                             // 0xDB
+    command(SET_VCOM_DETECT);
     command(0x40);
-    command(SSD1306_DISPLAYALLON_RESUME);                       // 0xA4
-    command(SSD1306_NORMALDISPLAY);                             // 0xA6
+    command(DISPLAY_ALL_ON_RESUME);
+    command(NORMAL_DISPLAY);
 
-    command(SSD1306_DEACTIVATE_SCROLL);
+    command(DEACTIVATE_SCROLL);
 
-    command(SSD1306_DISPLAYON);  
+    command(DISPLAY_ON);
 }

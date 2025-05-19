@@ -2,14 +2,17 @@
 #include <i2c.h>
 #include <msp430.h>
 #include <assert_test.h>
-#include <stream.h>
+#include <msg_queue.h>
+#include "intrinsics.h"
 #include <stdint.h>
 
 uint8_t start_sent;
 
 void init_i2c(uint8_t slave_addr) {
+    init_msg_queue();
+
     start_sent = 0;
-    
+
     /* Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
     P1SEL2 |= BIT6 | BIT7;
@@ -43,14 +46,19 @@ void init_i2c(uint8_t slave_addr) {
     IE2 |= UCB0TXIE;
 }
 
-void send_message(uint8_t* message) {
-    uint8_t empty_stream = stream_is_empty();
+void send_message(uint8_t message[2]) {
+    uint8_t was_queue_empty = msg_queue_is_empty();
 
-    add_to_stream(message);
+    /** TODO: ver si funciona el deshabilitar solo interrupciones de la USCI */
+    /* Protegemos la cola de mensajes, ya que es un dato compartido con la ISR de transmisión. */
+    __disable_interrupt();
+    add_to_msg_queue(message[0]);
+    add_to_msg_queue(message[1]);
+    __enable_interrupt();
 
-    if (!empty_stream) return;
+    if (!was_queue_empty) return;
 
-    /* Esperamos a que no hay STOP pendiene y enviamos START en modo de transmisión */
+    /* Esperamos a que no haya STOP pendiente y enviamos START en modo de transmisión. */
     while (UCB0CTL1 & UCTXSTP);
     UCB0CTL1 |= UCTR | UCTXSTT;
 }
@@ -59,7 +67,7 @@ void send_message(uint8_t* message) {
 #pragma vector=USCIAB0TX_VECTOR
 __interrupt void FREE_TX_BUFFER(void) {
     /* Si no tenemos más mensajes para enviar, desactivamos estas interrupciones. */
-    if (stream_is_empty()) {
+    if (msg_queue_is_empty()) {
         // IE2 &= ~UCB0TXIE;
         IFG2 &= ~UCB0TXIFG;
         return;
