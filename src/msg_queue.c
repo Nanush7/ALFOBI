@@ -1,4 +1,5 @@
 #include "msg_queue.h"
+#include "assert_test.h"
 
 /** Cola circular de mensajes */
 uint8_t msg_queue[MSG_QUEUE_SIZE];
@@ -31,13 +32,15 @@ uint8_t msg_queue_is_full(void) {
     return msg_tail + 1 == msg_head || (msg_tail == MSG_QUEUE_SIZE - 1 && msg_head == 0);
 }
 
-uint8_t dequeue_from_msg_queue(void) {
+void dequeue_from_msg_queue(void) {
     ASSERT(!msg_queue_is_empty());
-
-    uint8_t res = msg_queue[msg_head];
 
     if (++msg_head == MSG_QUEUE_SIZE)
         msg_head = 0;
+}
 
-    return res;
+uint8_t next_from_msg_queue() {
+    ASSERT(!msg_queue_is_empty());
+
+    return msg_queue[msg_head];
 }

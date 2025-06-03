@@ -4,27 +4,17 @@
  *
  * Este archivo contiene las declaraciones de las funciones utilizadas para
  * configurar e inicializar el timer por hardware.
- *
- * @version 2.0
- * @date 08/04/2025
  */
 
-#ifndef _TIMER_HW_H_
-#define _TIMER_HW_H_
+#ifndef TIMER_HW_H
+#define TIMER_HW_H
 
 #include <stdint.h>
 
-typedef enum {
-    TIMER_SOURCE_CRYSTAL,
-    TIMER_SOURCE_VLO
-} timer_source_t;
-
 /**
- * @brief Configura e inicializa el timer con la fuente indicada.
- *
- * @param source Fuente seleccionada.
+ * @brief Configura e inicializa el timer.
  */
-void init_timer(timer_source_t source);
+void init_timer_hw();
 
 /**
  * @brief Deshabilita las interrupciones del timer de hardware (CCIE0)
@@ -38,4 +28,6 @@ void disable_interrupt_timerhw();
 */
 void enable_interrupt_timerhw();
 
-#endif
+void add_timer(timer_t timer);
+
+#endif /* TIMER_HW_H */

@@ -1,11 +1,21 @@
 #include <msp430.h>
-
 #include <timer.h>
 #include <timer_hw.h>
-
+#include <assert_test.h>
 
 #define CRYSTAL_FREQ 32768
-#define VLO_FREQ     12000
+#define MAX_TIMERS_AMOUNT 5
+#define TACCR0_TARGET (CRYSTAL_FREQ / (1000 / TIMER_INTERVAL) - 1)
+
+timer_t timers[MAX_TIMERS_AMOUNT];
+uint8_t timer_tail = 0;
+
+void add_timer(timer_t timer) {
+    ASSERT(timer_tail < MAX_TIMERS_AMOUNT);
+
+    timers[timer_tail] = timer;
+    timer_tail++;
+}
 
 void disable_interrupt_timerhw() {
     TACCTL0 &= ~CCIE;
@@ -15,20 +25,12 @@ void enable_interrupt_timerhw() {
     TACCTL0 |= CCIE;
 }
 
-void init_timer(timer_source_t source) {
-    /* Seleccionamos el source de ACLK (LFXT1 o VLO). */
-    /* Seteamos el TACCR0 para que interrumpa cada 250ms. */
+void init_timer_hw() {
+    /* Seleccionamos el source del ACLK. */
+    /* Seteamos el TACCR0 para que interrumpa cada TIMER_INTERVAL ms. */
     BCSCTL3 = (BCSCTL3 & ~LFXT1S_3);
-    switch (source) {
-        case TIMER_SOURCE_CRYSTAL:
-            BCSCTL3 |= LFXT1S_0;
-            TACCR0 = (CRYSTAL_FREQ / 4) - 1;
-            break;
-        case TIMER_SOURCE_VLO:
-            BCSCTL3 |= LFXT1S_2;
-            TACCR0 = (VLO_FREQ / 4) - 1;
-            break;
-    }
+    BCSCTL3 |= LFXT1S_0;
+    TACCR0 = TACCR0_TARGET;
 
     /* Activamos interrupciones de CC0. */
     enable_interrupt_timerhw();
@@ -45,5 +47,8 @@ void init_timer(timer_source_t source) {
 
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void CC0_ISR(void) {
-    inc_time();
+    for (uint8_t i = 0; i < timer_tail; i++) {
+        timer_t* timer = timers + i;
+        increment_counter(timer);
+    }
 }
