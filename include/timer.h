@@ -1,62 +1,50 @@
 /**
  * @file timer.h
  * @brief Proporciona funciones y una estructura para gestionar el tiempo.
- * 
+ *
  * Este archivo contiene la declaración de las funciones y la estructura necesaria para
  * gestionar el tiempo en formato horas, minutos, segundos y milisegundos.
  */
 
-#ifndef _TIMER_H_
-#define _TIMER_H_
+#ifndef TIMER_H
+#define TIMER_H
 
 #include <stdint.h>
+#include <func_queue.h>
 
-#define TIMER_INTERVAL 250 // En caso de cambiarse esto, se debería modificar el código del timer_hw, al igual
+/* En caso de cambiarse esto, se debería modificar el código del timer_hw. */
+#define TIMER_INTERVAL 50
 
 /*
  * El timer se inicializa en 0 por defecto en el archivo de implementación.
  */
 
 /**
- * @brief Estructura que representa el tiempo.
- * 
- * La estructura `time_t` contiene los campos necesarios para representar un
- * tiempo en horas, minutos, segundos y milisegundos.
+ * @struct timer_t
+ * @brief Estructura para manejo de timers.
+ *
+ * @param target   valor del counter necesario para ejecutar callback.
+ * @param counter  cuenta actual.
+ * @param callback función a ejecutar cuando se alcanza el target.
  */
 typedef struct {
-    uint8_t hours;          /**< Hora en formato 24 horas (0-23). */
-    uint8_t minutes;        /**< Minutos (0-59). */
-    uint8_t seconds;       /**< Segundos (0-59). */
-    uint16_t miliseconds;    /**< Milisegundos (0-999). */
-} time_t;
+    uint8_t target;
+    uint8_t counter;
+    func* callback;
+} timer_t;
 
 /**
- * @brief Establece el tiempo inicial.
- * 
- * Esta función establece el tiempo a un valor específico, proporcionando
- * una estructura `time_t` con horas, minutos, segundos y milisegundos.
- * 
- * @param time Estructura que contiene la hora, minutos, segundos y milisegundos a establecer.
+ * @brief Inicializa un timer recurrente.
+ *
+ * @param target_interval Cada cuántas interrupciones del reloj se encola la 
  */
-void set_time(time_t* time);
+void init_timer(timer_t* timer, uint8_t target, func* callback);
 
 /**
- * @brief Incrementa el tiempo en 250 milisegundos.
- * 
- * Esta función incrementa el tiempo en la variable global `tiempo_actual` por 250 milisegundos.
- * Si el valor de los milisegundos alcanza 1000, se incrementa el contador de segundos, minutos
- * y horas según corresponda, con los límites de cada unidad de tiempo.
- */
-void inc_time();
+ * @brief Incrementa el contador del timer. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
+ *
+ * @param timer El timer a incrementar.
+*/
+void increment_counter(timer_t* timer);
 
-/**
- * @brief Obtiene el tiempo actual.
- * 
- * Esta función obtiene el valor actual del tiempo y lo copia en una estructura `time_t` proporcionada.
- * 
- * @param buff_time Puntero a la estructura `time_t` en la que se almacenará el tiempo actual.
- */
-void get_time(time_t* buff_time);
-
-#endif
-
+#endif // TIMER_H

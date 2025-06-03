@@ -2,16 +2,16 @@
 #include <i2c.h>
 #include <msp430.h>
 #include <assert_test.h>
-#include <msg_queue.h>
+#include "msg_queue.h"
 #include "intrinsics.h"
 #include <stdint.h>
 
-uint8_t start_sent;
+uint8_t first_sent;
 
 void init_i2c(uint8_t slave_addr) {
     init_msg_queue();
 
-    start_sent = 0;
+    first_sent = 0;
 
     /* Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
@@ -47,19 +47,23 @@ void init_i2c(uint8_t slave_addr) {
 }
 
 void send_message(uint8_t message[2]) {
-    uint8_t was_queue_empty = msg_queue_is_empty();
-
     /** TODO: ver si funciona el deshabilitar solo interrupciones de la USCI */
     /* Protegemos la cola de mensajes, ya que es un dato compartido con la ISR de transmisión. */
     __disable_interrupt();
+    uint8_t was_queue_empty = msg_queue_is_empty();
+
     add_to_msg_queue(message[0]);
     add_to_msg_queue(message[1]);
+    if (!was_queue_empty) {
+        __enable_interrupt();
+        return;
+    }
+    first_sent = 0;
     __enable_interrupt();
-
-    if (!was_queue_empty) return;
 
     /* Esperamos a que no haya STOP pendiente y enviamos START en modo de transmisión. */
     while (UCB0CTL1 & UCTXSTP);
+    while (UCB0STAT & UCBBUSY);
     UCB0CTL1 |= UCTR | UCTXSTT;
 }
 
@@ -68,35 +72,32 @@ void send_message(uint8_t message[2]) {
 __interrupt void FREE_TX_BUFFER(void) {
     /* Si no tenemos más mensajes para enviar, desactivamos estas interrupciones. */
     if (msg_queue_is_empty()) {
-        // IE2 &= ~UCB0TXIE;
+        first_sent = 0;
         IFG2 &= ~UCB0TXIFG;
+        UCB0CTL1 |= UCTXSTP;
         return;
     }
 
-    if (is_start_of_message() && !start_sent) {
-        UCB0CTL1 |= UCTXSTT;
-        start_sent = 1;
+    if (first_sent) {
+        dequeue_from_msg_queue();
+    } else {
+        first_sent = 1;
     }
 
-    uint8_t next_byte = read_byte_from_stream();
-    increment_cursor(); /* Asumimos que el stop se recibe correctamente, por lo que está bien pasar a la siguiente palabra luego de mandar el STOP. */
-    if (next_byte == '\0') {
-        start_sent = 0;
-        if (stream_is_empty()) {
-            UCB0CTL1 |= UCTXSTP;
-            IFG2 &= ~UCB0TXIFG;
-        }
-    } else {
-        UCB0TXBUF = next_byte;
+    if (!msg_queue_is_empty()) {
+        UCB0TXBUF = next_from_msg_queue();
     }
 }
 
 #pragma vector=USCIAB0RX_VECTOR
 __interrupt void NACK_ISR(void) {
     ASSERT(UCB0STAT & UCNACKIFG);
-    start_sent = 0;
-    /* El cursor vuelve al principio del mensaje fallido. */
-    reset_cursor();
-    /** TODO: Asumimos que se ejecuta inmediatamente la ISR de buffer vacío. */
+
+    IFG2 &= ~UCB0TXIFG;
+    first_sent = 0;
+    while (UCB0CTL1 & UCTXSTP);
+    /* Mandamos Restart. */
+    UCB0CTL1 |= UCTR | UCTXSTT;
+
     /** TODO: No parece funcionar esta ISR, testear. */
 }
