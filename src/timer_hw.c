@@ -22,12 +22,10 @@ void add_timer(timer_t timer) {
 
 void disable_interrupt_timerhw(void) {
     TA0CCTL0 &= ~CCIE;
-    TA1CCTL0 &= ~CCIE;
 }
 
 void enable_interrupt_timerhw(void) {
     TA0CCTL0 |= CCIE;
-    TA1CCTL0 |= CCIE;
 }
 
 void init_timer_hw(void) {
@@ -35,11 +33,11 @@ void init_timer_hw(void) {
     BCSCTL3  = (BCSCTL3 & ~LFXT1S_3);
     BCSCTL3 |= LFXT1S_0;
 
-    /* Activamos interrupciones de CC0. */
     /* Seteamos los TACCRx para que interrumpan después de cierta cantidad de ticks. */
     TA0CCR0 = TA0CCR0_TARGET;
     TA1CCR0 = TA1CCR0_TARGET;
 
+    /* Activamos interrupciones de CC0. */
     enable_interrupt_timerhw();
 
     /*
@@ -62,12 +60,14 @@ void set_timer_A1_callback(func* callback) {
 }
 
 void enable_timer_A1(void) {
-    TA1CTL |= MC_1;
+    TA1CTL   |= MC_1;
+    TA1CCTL0 |= CCIE;
 }
 
 void disable_timer_A1(void) {
-    TA1CTL &= ~MC_3;
-    TA1R    = 0;
+    TA1CTL   &= ~MC_3;
+    TA1CCTL0 &= ~CCIE;
+    TA1R = 0;
 }
 
 #pragma vector=TIMER0_A0_VECTOR
