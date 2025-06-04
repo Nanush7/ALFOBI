@@ -14,10 +14,8 @@ typedef void (func)(void);
 
 /**
  * @brief Inicializa la cola de funciones.
- *
- * @param
  */
-void init_queue();
+void init_queue(void);
 
 /**
  * @brief Agrega una función a la cola.
@@ -33,14 +31,14 @@ void add_to_queue(func* funcptr);
  *
  * @retval Retorna 1 si la cola esta va. Retorna 0 si la cola no esta llena.
  */
-uint8_t queue_is_empty();
+uint8_t queue_is_empty(void);
 
 /**
  * @brief Pregunta si la cola esta llena
  *
  * @retval Retorna 1 si la cola esta llena. Retorna 0 si la cola no esta llena.
  */
-uint8_t queue_is_full();
+uint8_t queue_is_full(void);
 
 /**
  * @brief Retorna y remueve el siguiente elemento de la cola, en caso de haber uno.
@@ -49,6 +47,6 @@ uint8_t queue_is_full();
  *
  * @return Siguiente elemento de la cola.
  */
-func* dequeue_from_queue();
+func* dequeue_from_queue(void);
 
 #endif // FUNC_QUEUE_H

@@ -10,24 +10,44 @@
 #define TIMER_HW_H
 
 #include <stdint.h>
+#include <timer.h>
+#include <func_queue.h>
 
 /**
  * @brief Configura e inicializa el timer.
  */
-void init_timer_hw();
+void init_timer_hw(void);
 
 /**
  * @brief Deshabilita las interrupciones del timer de hardware (CCIE0)
- *
  */
-void disable_interrupt_timerhw();
+void disable_interrupt_timerhw(void);
 
 /**
 * @brief Habilita las interrupciones del timer de hardware (CCIE0)
 *
 */
-void enable_interrupt_timerhw();
+void enable_interrupt_timerhw(void);
 
+/**
+ * @brief Agrega timer lógico a la lista de timers del TimerA0.
+ * 
+ * @param timer El timer lógico a agregar.
+ */
 void add_timer(timer_t timer);
+
+/**
+ * @brief Establece qué función se invocará cuando se alcance el target del TimerA1.
+ * 
+ * @param callback Puntero a la función correspondiente.
+ */
+void set_timer_A1_callback(func* callback);
+
+/**
+ * @brief Habilita TimerA1.
+ * 
+ * @note TimerA1 se deshabilita cuando interrumpe.
+ */
+void enable_timer_A1(void);
 
 #endif /* TIMER_HW_H */

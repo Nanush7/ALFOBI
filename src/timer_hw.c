@@ -5,10 +5,13 @@
 
 #define CRYSTAL_FREQ 32768
 #define MAX_TIMERS_AMOUNT 5
-#define TACCR0_TARGET (CRYSTAL_FREQ / (1000 / TIMER_INTERVAL) - 1)
+#define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / TIMER_INTERVAL) - 1)
+#define TA1CCR0_TARGET (CRYSTAL_FREQ / 1000 - 1) /* Cada 1 ms. */
 
 timer_t timers[MAX_TIMERS_AMOUNT];
 uint8_t timer_tail = 0;
+
+func* callback_timer_A1 = 0;
 
 void add_timer(timer_t timer) {
     ASSERT(timer_tail < MAX_TIMERS_AMOUNT);
@@ -17,22 +20,26 @@ void add_timer(timer_t timer) {
     timer_tail++;
 }
 
-void disable_interrupt_timerhw() {
-    TACCTL0 &= ~CCIE;
+void disable_interrupt_timerhw(void) {
+    TA0CCTL0 &= ~CCIE;
+    TA1CCTL0 &= ~CCIE;
 }
 
-void enable_interrupt_timerhw() {
-    TACCTL0 |= CCIE;
+void enable_interrupt_timerhw(void) {
+    TA0CCTL0 |= CCIE;
+    TA1CCTL0 |= CCIE;
 }
 
-void init_timer_hw() {
+void init_timer_hw(void) {
     /* Seleccionamos el source del ACLK. */
-    /* Seteamos el TACCR0 para que interrumpa cada TIMER_INTERVAL ms. */
-    BCSCTL3 = (BCSCTL3 & ~LFXT1S_3);
+    BCSCTL3  = (BCSCTL3 & ~LFXT1S_3);
     BCSCTL3 |= LFXT1S_0;
-    TACCR0 = TACCR0_TARGET;
 
     /* Activamos interrupciones de CC0. */
+    /* Seteamos los TACCRx para que interrumpan después de cierta cantidad de ticks. */
+    TA0CCR0 = TA0CCR0_TARGET;
+    TA1CCR0 = TA1CCR0_TARGET;
+
     enable_interrupt_timerhw();
 
     /*
@@ -40,15 +47,40 @@ void init_timer_hw() {
      * MC     -> Up mode.
      * Seteamos MC al final para iniciar después de configurar todos los campos.
      */
-    TACTL &= ~TASSEL_3 & ~MC_3;
-    TACTL |= TASSEL_1;
-    TACTL |= MC_1;
+
+    TA0CTL &= ~TASSEL_3 & ~MC_3;
+    TA0CTL |= TASSEL_1;
+    TA0CTL |= MC_1 | TACLR;
+
+    /* Dejamos el Timer_A1 apagado. */
+    TA1CTL &= ~TASSEL_3 & ~MC_3;
+    TA1CTL |= TASSEL_1 | TACLR;
+}
+
+void set_timer_A1_callback(func* callback) {
+    callback_timer_A1 = callback;
+}
+
+void enable_timer_A1(void) {
+    TA1CTL |= MC_1;
+}
+
+void disable_timer_A1(void) {
+    TA1CTL &= ~MC_3;
+    TA1R    = 0;
 }
 
 #pragma vector=TIMER0_A0_VECTOR
-__interrupt void CC0_ISR(void) {
+__interrupt void Timer0_A0_ISR(void) {
     for (uint8_t i = 0; i < timer_tail; i++) {
         timer_t* timer = timers + i;
         increment_counter(timer);
     }
+}
+
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt void Timer1_A0_ISR(void) {
+    disable_timer_A1();
+    ASSERT(callback_timer_A1) /* Si Timer_A1 está prendido, el callback no puede ser NULL. */
+    add_to_queue(callback_timer_A1);
 }

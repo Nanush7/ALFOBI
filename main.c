@@ -6,6 +6,7 @@
 #include <timer_hw.h>
 #include <func_queue.h>
 #include <gui.h>
+#include <keyboard.h>
 
 typedef struct {
     arrow_direction_t direction;
@@ -45,29 +46,39 @@ void lower_arrows(void) {
     }
 }
 
+void prueba(void) {
+    volatile uint8_t res_prueba = get_pressed_key();
+}
+
 int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
+    /** TODO: Cambiar nombre para saber qué cola es. */
     init_queue();
-    init_i2c(0x3C);
+    // init_i2c(0x3C);
+    init_keyboard();
     init_timer_hw();
 
+    // timer_t timer;
+    // init_timer(&timer, 4, lower_arrows);
+    // add_timer(timer);
+
     timer_t timer;
-    init_timer(&timer, 4, lower_arrows);
+    init_timer(&timer, 2, prueba);
     add_timer(timer);
 
     __enable_interrupt();
 
-    init_gui();
+    // init_gui();
 
-    render_chars(score.digits, score.digit_amount, 0, 6);
-    render_chars(level.digits, level.digit_amount, 0, 12);
+    // render_chars(score.digits, score.digit_amount, 0, 6);
+    // render_chars(level.digits, level.digit_amount, 0, 12);
 
-    for (uint8_t i = 0; i < 4; i++) {
-        arrow_t* arrow_ptr = arrows + i;
-        render_arrow(arrow_ptr->direction, arrow_ptr->height, 0);
-    }
+    // for (uint8_t i = 0; i < 4; i++) {
+    //     arrow_t* arrow_ptr = arrows + i;
+    //     render_arrow(arrow_ptr->direction, arrow_ptr->height, 0);
+    // }
 
     while (1) {
         while (!queue_is_empty()) {

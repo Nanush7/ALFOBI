@@ -201,7 +201,7 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
 
     for (uint8_t character = 0; character < size; character++) {
 
-        uint8_t* template = numbers_5x3[buff[character] - '0'];  /** TODO: por ahora solo para números. */
+        const uint8_t* template = numbers_5x3[buff[character] - '0'];  /** TODO: por ahora solo para números. */
 
         for (uint8_t column = 0; column < 5; column++) {
 
