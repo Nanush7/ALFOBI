@@ -5,8 +5,8 @@
 
 #define CRYSTAL_FREQ 32768
 #define MAX_TIMERS_AMOUNT 5
-#define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / TIMER_INTERVAL) - 1)
-#define TA1CCR0_TARGET (CRYSTAL_FREQ / 1000 - 1) /* Cada 1 ms. */
+#define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMER_INTERRUPTS) - 1)
+#define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / 100) - 1) /* Cada 10 ms. */
 
 timer_t timers[MAX_TIMERS_AMOUNT];
 uint8_t timer_tail = 0;
@@ -60,6 +60,7 @@ void set_timer_A1_callback(func* callback) {
 }
 
 void enable_timer_A1(void) {
+    TA1R = 0;
     TA1CTL   |= MC_1;
     TA1CCTL0 |= CCIE;
 }
@@ -67,7 +68,6 @@ void enable_timer_A1(void) {
 void disable_timer_A1(void) {
     TA1CTL   &= ~MC_3;
     TA1CCTL0 &= ~CCIE;
-    TA1R = 0;
 }
 
 #pragma vector=TIMER0_A0_VECTOR

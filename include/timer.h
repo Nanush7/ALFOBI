@@ -13,7 +13,7 @@
 #include <func_queue.h>
 
 /* En caso de cambiarse esto, se debería modificar el código del timer_hw. */
-#define TIMER_INTERVAL 50
+#define MS_BETWEEN_TIMER_INTERRUPTS 50
 
 /*
  * El timer se inicializa en 0 por defecto en el archivo de implementación.

@@ -1,3 +1,6 @@
+#include "assert_test.h"
+#include "intrinsics.h"
+#include "msp430g2553.h"
 #include <keyboard.h>
 #include <msp430.h>
 #include <stdint.h>
@@ -8,24 +11,38 @@
 
 uint8_t pressed_key = 17;
 
-void init_keyboard(void) {
-    P1SEL &= ~COLUMNS;
-    P2SEL &= ~ROWS;
+/**
+ * @brief Habilita interrupciones de GPIO.
+ */
+void enable_interrupt_gpio() {
+    P2IE |= ROWS;
+}
 
+/**
+ * @brief Deshabilita interrupciones de GPIO.
+ */
+void disable_interrupt_gpio() {
+    P2IE &= ~ROWS;
+}
+
+void init_keyboard(void) {
+    P1SEL  &= ~COLUMNS;
     P1SEL2 &= ~COLUMNS;
+
+    P2SEL  &= ~ROWS;
     P2SEL2 &= ~ROWS;
 
-    P1DIR |=  COLUMNS; /* Columnas output. */
-    P2DIR &= ~ROWS;    /* Filas como input */
+    P1DIR |= COLUMNS; /* Columnas output. */
+    P2DIR &= ~ROWS;   /* Filas input. */
 
-    P1OUT &= ~COLUMNS; /* Inicializar columnas en bajo */
+    P1OUT &= ~COLUMNS; /* Inicializar columnas en bajo. */
 
     P2REN |= ROWS; /* Habilitar resistencias pull-up en ROWS */
-    P2OUT |= ROWS; /* Habilitar pull-up */
+    P2OUT |= ROWS;
 
-    P2IE  |=  ROWS; /* Habilitar interrupciones en filas. */
-    P2IES |=  ROWS; /* Interrupción en flanco descendente. */
-    P2IFG &= ~ROWS; /* Limpiar flags de interrupción. */
+    P2IES |=  ROWS;          /* Interrupción en flanco descendente. */
+    P2IFG &= ~ROWS;          /* Limpiar flags de interrupción. */
+    enable_interrupt_gpio(); /* Habilitar interrupciones en filas. */
 
     set_timer_A1_callback(handle_keypress);
 }
@@ -37,11 +54,9 @@ uint8_t get_pressed_key(void) {
 }
 
 void handle_keypress(void) {
-    /* Guardamos el estado de las columnas. */
-    uint8_t previous_columns_state = P1OUT & COLUMNS;
-    
+
     /* Leer filas. */
-    uint8_t pressed_row;
+    uint8_t pressed_row = 5;
     uint8_t mask = BIT0;
     uint8_t rows = P2IN & ROWS;
     for (uint8_t row = 0; row < 4; row++) {
@@ -51,31 +66,37 @@ void handle_keypress(void) {
             break;
         }
 
-        if (!row) /* Tenemos que pasar del BIT0 al BIT3. */
-            mask <<= 3;
-        else
-            mask <<= 1;
+        /* Tenemos que pasar del BIT0 al BIT3. */
+        mask <<= row ? 1 : 3;
     }
 
-    P1OUT = BIT1;
-    uint8_t pressed_column;
-    for (uint8_t column = 0; column < 4; column++) {
+    mask = BIT1;
+    uint8_t pressed_column = 5;
+    for (uint8_t keyboard_column = 0; keyboard_column < 4; keyboard_column++) {
 
-        if ((P2IN & ROWS) == 0x3C) {
-            pressed_column = column;
+        P1OUT |= mask;
+        if ((P2IN & ROWS) == ROWS) {
+            pressed_column = keyboard_column;
             break;
         }
-        P1OUT <<= 1;
+        P1OUT &= ~mask;
+        mask <<= 1;
     }
 
-    /* Restaurar el estado de las columnas. */
-    P1OUT = previous_columns_state;
+    /* Apagamos las columnas. */
+    P1OUT &= ~COLUMNS;
 
     pressed_key = (pressed_row << 2) + pressed_column + 1;
+
+    /* Limpiamos las interrupciones pendientes. */
+    P2IFG &= ~ROWS;
+    enable_interrupt_gpio();
 }
 
 #pragma vector=PORT2_VECTOR
 __interrupt void teclado_isr(void) {
+    /* No queremos que interrumpa más de una vez mientras se espera por el rebote. */
+    disable_interrupt_gpio();
     P2IFG &= ~ROWS;
     enable_timer_A1();
 }
