@@ -8,6 +8,24 @@
 
 #include <stdint.h>
 
+typedef struct {
+    uint8_t one:   1;
+    uint8_t two:   1;
+    uint8_t three: 1;
+    uint8_t a:     1;
+    uint8_t four:  1;
+    uint8_t five:  1;
+    uint8_t six:   1;
+    uint8_t b:     1;
+    uint8_t seven: 1;
+    uint8_t eight: 1;
+    uint8_t nine:  1;
+    uint8_t c:     1;
+    uint8_t aster: 1;
+    uint8_t zero:  1;
+    uint8_t hash:  1;
+    uint8_t d:     1;
+} keys_t;
 
 /** TODO: Acomodar Doxygen.
  * @brief Se configura el teclado para la correcta recepcion de botones.
@@ -18,13 +36,15 @@ void init_keyboard(void);
 
 /**
  * @brief Obtiene las teclas presionadas desde la última consulta.
+ *
+ * @return Struct que contiene las teclas presionadas en 1.
+ *
+ * @note Se borran los botones seleccionados al ejecutarla.
  */
-uint8_t get_pressed_key(void);
+keys_t get_pressed_keys(void);
 
 /**
- * @brief Se hace el procesamiento de la recepcion de un boton.
- *
- * @return Se devuelve el numero (del 1 al 16) del boton apretado.
+ * @brief Chequea y guarda los botones presionados.
  */
 void handle_keypress(void);
 

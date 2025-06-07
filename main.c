@@ -47,7 +47,7 @@ void lower_arrows(void) {
 }
 
 void prueba(void) {
-    volatile uint8_t res_prueba = get_pressed_key();
+    volatile keys_t res_prueba = get_pressed_keys();
 }
 
 int main() {

@@ -1,15 +1,15 @@
-#include "assert_test.h"
-#include "intrinsics.h"
-#include "msp430g2553.h"
 #include <keyboard.h>
+#include <assert_test.h>
 #include <msp430.h>
+#include <intrinsics.h>
 #include <stdint.h>
 #include <timer_hw.h>
 
 #define ROWS    (BIT0 | BIT3 | BIT4 | BIT5)
 #define COLUMNS (BIT1 | BIT2 | BIT3 | BIT4)
 
-uint8_t pressed_key = 17;
+const keys_t no_keys = {0};
+keys_t pressed_keys = {0};
 
 /**
  * @brief Habilita interrupciones de GPIO.
@@ -47,49 +47,48 @@ void init_keyboard(void) {
     set_timer_A1_callback(handle_keypress);
 }
 
-uint8_t get_pressed_key(void) {
-    uint8_t res = pressed_key;
-    pressed_key = 17;
+keys_t get_pressed_keys(void) {
+    keys_t res = pressed_keys;
+    pressed_keys = no_keys;
     return res;
 }
 
 void handle_keypress(void) {
+    /** TODO: Podría ser más rápido si solo miramos lo que vamos a usar. */
 
-    /* Leer filas. */
-    uint8_t pressed_row = 5;
-    uint8_t mask = BIT0;
-    uint8_t rows = P2IN & ROWS;
-    for (uint8_t row = 0; row < 4; row++) {
+    /* Casteamos a entero para poder acceder a los bits por posición, sin nombres. */
+    /* Se asume que los bits están bien alineados. */
+    uint16_t* pressed_keys_bits = (uint16_t*)&pressed_keys;
 
-        if (!(rows & mask)) {
-            pressed_row = row;
-            break;
+    /* Generamos una máscara para las filas que nos interesan (las que están bajas). */
+    uint8_t target_rows_mask = ~(P2IN & ROWS);
+    /* Utilizaremos los bits de checked_rows_mask para marcar a qué filas hay que limpiarles la IFG. */
+    uint8_t checked_rows_mask = 0;
+
+    /* Ahora vamos por las columnas viendo si al prenderlas se cambian las filas de la máscara. */
+    uint8_t current_column_mask = BIT1;
+    for (uint8_t column_index = 0; column_index < 4; column_index++) {
+
+        P1OUT |= current_column_mask;
+        uint8_t current_row_mask = BIT0;
+        uint8_t active_rows = P2IN & ROWS;
+        for (uint8_t row_index = 0; row_index < 4; row_index++) {
+
+            if (target_rows_mask & active_rows & current_row_mask) {
+                *pressed_keys_bits |= (1 << ((row_index << 2) + column_index));
+                checked_rows_mask |= current_row_mask;
+            }
+
+            /* La primera vez tenemos que pasar del BIT0 al BIT3. */
+            current_row_mask <<= row_index ? 1 : 3;
         }
 
-        /* Tenemos que pasar del BIT0 al BIT3. */
-        mask <<= row ? 1 : 3;
+        P1OUT &= ~current_column_mask;
+        current_column_mask <<= 1;
     }
 
-    mask = BIT1;
-    uint8_t pressed_column = 5;
-    for (uint8_t keyboard_column = 0; keyboard_column < 4; keyboard_column++) {
-
-        P1OUT |= mask;
-        if ((P2IN & ROWS) == ROWS) {
-            pressed_column = keyboard_column;
-            break;
-        }
-        P1OUT &= ~mask;
-        mask <<= 1;
-    }
-
-    /* Apagamos las columnas. */
-    P1OUT &= ~COLUMNS;
-
-    pressed_key = (pressed_row << 2) + pressed_column + 1;
-
-    /* Limpiamos las interrupciones pendientes. */
-    P2IFG &= ~ROWS;
+    /* Solo limpiamos las flags de las filas procesadas. */
+    P2IFG &= ~checked_rows_mask;
     enable_interrupt_gpio();
 }
 
