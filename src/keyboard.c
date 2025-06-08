@@ -26,6 +26,8 @@ void disable_interrupt_gpio() {
 }
 
 void init_keyboard(void) {
+    set_timer_A1_callback(handle_keypress);
+
     P1SEL  &= ~COLUMNS;
     P1SEL2 &= ~COLUMNS;
 
@@ -43,8 +45,6 @@ void init_keyboard(void) {
     P2IES |=  ROWS;          /* Interrupción en flanco descendente. */
     P2IFG &= ~ROWS;          /* Limpiar flags de interrupción. */
     enable_interrupt_gpio(); /* Habilitar interrupciones en filas. */
-
-    set_timer_A1_callback(handle_keypress);
 }
 
 keys_t get_pressed_keys(void) {
@@ -54,7 +54,14 @@ keys_t get_pressed_keys(void) {
 }
 
 void handle_keypress(void) {
-    /** TODO: Podría ser más rápido si solo miramos lo que vamos a usar. */
+    /* Omitimos si entramos por rebote. */
+    if (!(~(P2IN & ROWS) & P2IFG)) {
+        P2IFG &= ~ROWS;
+        enable_interrupt_gpio();
+        return;
+    }
+
+    uint8_t previous_ifg = P2IFG;
 
     /* Casteamos a entero para poder acceder a los bits por posición, sin nombres. */
     /* Se asume que los bits están bien alineados. */
@@ -62,6 +69,7 @@ void handle_keypress(void) {
 
     /* Generamos una máscara para las filas que nos interesan (las que están bajas). */
     uint8_t target_rows_mask = ~(P2IN & ROWS);
+
     /* Utilizaremos los bits de checked_rows_mask para marcar a qué filas hay que limpiarles la IFG. */
     uint8_t checked_rows_mask = 0;
 
@@ -74,7 +82,7 @@ void handle_keypress(void) {
         uint8_t active_rows = P2IN & ROWS;
         for (uint8_t row_index = 0; row_index < 4; row_index++) {
 
-            if (target_rows_mask & active_rows & current_row_mask) {
+            if (active_rows & target_rows_mask & current_row_mask & previous_ifg) {
                 *pressed_keys_bits |= (1 << ((row_index << 2) + column_index));
                 checked_rows_mask |= current_row_mask;
             }
@@ -87,8 +95,8 @@ void handle_keypress(void) {
         current_column_mask <<= 1;
     }
 
-    /* Solo limpiamos las flags de las filas procesadas. */
-    P2IFG &= ~checked_rows_mask;
+    /* Solo limpiamos las flags de las filas procesadas y las que ya estaban apagadas. */
+    P2IFG &= ~checked_rows_mask & previous_ifg;
     enable_interrupt_gpio();
 }
 
@@ -96,6 +104,6 @@ void handle_keypress(void) {
 __interrupt void teclado_isr(void) {
     /* No queremos que interrumpa más de una vez mientras se espera por el rebote. */
     disable_interrupt_gpio();
-    P2IFG &= ~ROWS;
+    // P2IFG &= ~ROWS;
     enable_timer_A1();
 }

@@ -6,7 +6,7 @@
 #define CRYSTAL_FREQ 32768
 #define MAX_TIMERS_AMOUNT 5
 #define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMER_INTERRUPTS) - 1)
-#define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / 100) - 1) /* Cada 10 ms. */
+#define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / 10) - 1) /* Cada 10 ms. */
 
 timer_t timers[MAX_TIMERS_AMOUNT];
 uint8_t timer_tail = 0;
