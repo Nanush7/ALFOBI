@@ -1,4 +1,5 @@
 #include <random.h>
+#include <assert_test.h>
 
 uint8_t* random_byte_ptr = 0;
 

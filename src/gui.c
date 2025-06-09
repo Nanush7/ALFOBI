@@ -21,10 +21,10 @@ typedef struct {
 sized_array_t get_template(arrow_direction_t direction) {
     sized_array_t res;
 
-    switch (direction) {
+    /*switch (direction) {
         case LEFT:
-            res.size = &template_left;
-            res.array = LEFT_RIGHT_ARROW_SIZE;
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = &template_left;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = &template_up;
@@ -37,7 +37,7 @@ sized_array_t get_template(arrow_direction_t direction) {
         default:
             ASSERT(0);
             break;
-    }
+    } */
 
     return res;
 }
@@ -51,10 +51,10 @@ sized_array_t get_template(arrow_direction_t direction) {
 sized_array_t get_template_outline(arrow_direction_t direction) {
     sized_array_t res;
 
-    switch (direction) {
+    /* switch (direction) {
         case LEFT:
-            res.size = &template_left_outline;
-            res.array = LEFT_RIGHT_ARROW_SIZE;
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = &template_left_outline;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = &template_up_outline;
@@ -67,7 +67,7 @@ sized_array_t get_template_outline(arrow_direction_t direction) {
         default:
             ASSERT(0);
             break;
-    }
+    }*/
 
     return res;
 }
@@ -82,7 +82,7 @@ sized_array_t get_template_outline(arrow_direction_t direction) {
  * @param height     Columna del display donde se dibujará el byte.
  * @return El byte final (combinado) a escribir.
  */
-uint8_t combine_with_static_elements(uint8_t byte, const global_arrow_data_t* arrow_data, uint8_t height) {
+uint8_t combine_with_static_elements(uint8_t byte, global_arrow_data_t* arrow_data, uint8_t height) {
 
     uint8_t res            = byte;
     uint8_t outline_height = arrow_data->outline_height;
@@ -103,7 +103,7 @@ uint8_t combine_with_static_elements(uint8_t byte, const global_arrow_data_t* ar
  * @param  height     La altura actual de la flecha.
  * @return El primer y último índice a renderizar del template de la flecha.
  */
-template_range_t get_template_range(const global_arrow_data_t* arrow_data, uint8_t height) {
+template_range_t get_template_range(global_arrow_data_t* arrow_data, uint8_t height) {
     /*
      * Las flechas empiezan a aparecer en la altura HORIZONTAL_SEPARATOR_POSITION + 1.
      * y empiezan a desaparecer en la altura 127.
@@ -127,12 +127,12 @@ template_range_t get_template_range(const global_arrow_data_t* arrow_data, uint8
     return res;
 }
 
-void render_arrow(const global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline) {
+void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline) {
 
     template_range_t range = get_template_range(arrow_data, height);
     set_cursor_position(arrow_data->page, height + range.start);
 
-    const uint8_t* template_aux;
+    uint8_t* template_aux;
     if (is_outline)
         template_aux = get_template_outline(arrow_data->arrow_direction).array;
     else
@@ -171,7 +171,7 @@ void init_gui(void) {
     render_arrow(&down_arrow_data, down_arrow_data.outline_height, 1);
 }
 
-void clean_arrow(const global_arrow_data_t* arrow_data, uint8_t height) {
+void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height) {
 
     template_range_t range = get_template_range(arrow_data, height);
 
@@ -202,7 +202,7 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
 
     for (uint8_t character = 0; character < size; character++) {
 
-        const uint8_t* template = numbers_5x3[buff[character] - '!'];
+        uint8_t* template = numbers_5x3[buff[character] - '!'];
 
         for (uint8_t column = 0; column < 5; column++) {
 

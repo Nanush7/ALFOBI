@@ -1,7 +1,6 @@
 #include <msp430.h>
 #include "intrinsics.h"
 #include "i2c.h"
-#include "display.h"
 #include <timer.h>
 #include <timer_hw.h>
 #include <func_queue.h>

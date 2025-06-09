@@ -2,7 +2,7 @@
 #define GUI_H
 
 #include <stdint.h>
-#include <templates.h>
+#include "templates.h"
 
 /** TODO: Mover a game las estructuras de abajo. */
 #define MAX_ARROW_COUNT_PER_COLUMN 10

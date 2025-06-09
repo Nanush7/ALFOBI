@@ -1,5 +1,6 @@
 #include <game.h>
 #include <random.h>
+#include <assert_test.h>
 
 #define STARTING_ARROW_HEIGHT_UP_DOWN 20
 #define STARTING_ARROW_HEIGHT_LEFT_RIGHT 17
@@ -20,7 +21,7 @@
 /*=========================*/
 
 /* Juntamos todos los datos en un array para simplificar algoritmos. */
-const global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_data, &up_arrow_data, &left_arrow_data};
+global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_data, &up_arrow_data, &left_arrow_data};
 
 /* Contadores. */
 uint8_t score_counter_array[4];
@@ -235,7 +236,7 @@ void next_sequence(void) {
 uint8_t get_available_columns(arrow_direction_t* res) {
     uint8_t tope = 0;
     for (uint8_t column_index = 0; column_index < 4; column_index++) {
-        global_arrow_data_t* arrow_data = all_global_arrow_data[column_index];
+        const global_arrow_data_t* arrow_data = all_global_arrow_data[column_index];
 
         if (arrow_data->counter_next_arrow)
             continue;

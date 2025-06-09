@@ -2,6 +2,7 @@
 #include <timer_hw.h>
 #include <msp430.h>
 #include <func_queue.h>
+#include <assert_test.h>
 
 #define MAX_TIMERS_AMOUNT 5
 
