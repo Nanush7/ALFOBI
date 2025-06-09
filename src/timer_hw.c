@@ -4,21 +4,10 @@
 #include <assert_test.h>
 
 #define CRYSTAL_FREQ 32768
-#define MAX_TIMERS_AMOUNT 5
 #define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMER_INTERRUPTS) - 1)
 #define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / 10) - 1) /* Cada 10 ms. */
 
-timer_t timers[MAX_TIMERS_AMOUNT];
-uint8_t timer_tail = 0;
-
 func* callback_timer_A1 = 0;
-
-void add_timer(timer_t timer) {
-    ASSERT(timer_tail < MAX_TIMERS_AMOUNT);
-
-    timers[timer_tail] = timer;
-    timer_tail++;
-}
 
 void disable_interrupt_timerhw(void) {
     TA0CCTL0 &= ~CCIE;
@@ -72,10 +61,7 @@ void disable_timer_A1(void) {
 
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer0_A0_ISR(void) {
-    for (uint8_t i = 0; i < timer_tail; i++) {
-        timer_t* timer = timers + i;
-        increment_counter(timer);
-    }
+    increment_counters();
 }
 
 #pragma vector=TIMER1_A0_VECTOR

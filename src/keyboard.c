@@ -55,7 +55,7 @@ keys_t get_pressed_keys(void) {
 
 void handle_keypress(void) {
     /* Omitimos si entramos por rebote. */
-    if (!(~(P2IN & ROWS) & P2IFG)) {
+    if (!(~P2IN & ROWS & P2IFG)) {
         P2IFG &= ~ROWS;
         enable_interrupt_gpio();
         return;

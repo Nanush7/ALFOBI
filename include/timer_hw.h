@@ -30,13 +30,6 @@ void disable_interrupt_timerhw(void);
 void enable_interrupt_timerhw(void);
 
 /**
- * @brief Agrega timer lógico a la lista de timers del TimerA0.
- * 
- * @param timer El timer lógico a agregar.
- */
-void add_timer(timer_t timer);
-
-/**
  * @brief Establece qué función se invocará cuando se alcance el target del TimerA1.
  * 
  * @param callback Puntero a la función correspondiente.

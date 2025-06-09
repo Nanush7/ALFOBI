@@ -2,27 +2,75 @@
 #include <display.h>
 #include <assert_test.h>
 #include <stdint.h>
-#include <templates.h>
 
 #define HORIZONTAL_SEPARATOR_POSITION 22
 #define MAX_HEIGHT_VALUE              127
 #define MAX_WIDTH_VALUE               31
 
-global_arrow_data_t up_arrow_data = {
-    template_up, template_up_outline, UP, UP_DOWN_ARROW_SIZE, 121, 2, 2
-};
+typedef struct {
+    uint8_t* array;
+    uint8_t size;
+} sized_array_t;
 
-global_arrow_data_t down_arrow_data = {
-    template_down, template_down_outline, DOWN, UP_DOWN_ARROW_SIZE, 122, 2, 1
-};
+/**
+ * @brief Obtener template de la flecha y su tamaño según su dirección.
+ *
+ * @param  direction La direccion de la flecha correspondiente.
+ * @return Estructura del tipo sized_array_t.
+ */
+sized_array_t get_template(arrow_direction_t direction) {
+    sized_array_t res;
 
-global_arrow_data_t left_arrow_data = {
-    template_right, template_right_outline, RIGHT, LEFT_RIGHT_ARROW_SIZE, 120, 2, 0
-};
+    switch (direction) {
+        case LEFT:
+            res.size = &template_left;
+            res.array = LEFT_RIGHT_ARROW_SIZE;
+        case UP:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = &template_up;
+        case DOWN:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = &template_down;
+        case RIGHT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = &template_right;
+        default:
+            ASSERT(0);
+            break;
+    }
 
-global_arrow_data_t right_arrow_data = {
-    template_left, template_left_outline, LEFT, LEFT_RIGHT_ARROW_SIZE, 120, 2, 3
-};
+    return res;
+}
+
+/**
+ * @brief Obtener template del contorno la flecha y su tamaño según su dirección.
+ *
+ * @param  direction La direccion de la flecha correspondiente.
+ * @return Estructura del tipo sized_array_t
+ */
+sized_array_t get_template_outline(arrow_direction_t direction) {
+    sized_array_t res;
+
+    switch (direction) {
+        case LEFT:
+            res.size = &template_left_outline;
+            res.array = LEFT_RIGHT_ARROW_SIZE;
+        case UP:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = &template_up_outline;
+        case DOWN:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = &template_down_outline;
+        case RIGHT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = &template_right_outline;
+        default:
+            ASSERT(0);
+            break;
+    }
+
+    return res;
+}
 
 /**
  * @brief Combinar bytes de elementos que se solapan en el display.
@@ -39,8 +87,9 @@ uint8_t combine_with_static_elements(uint8_t byte, const global_arrow_data_t* ar
     uint8_t res            = byte;
     uint8_t outline_height = arrow_data->outline_height;
 
-    if (height >= outline_height && height <= outline_height + arrow_data->template_size - 1)
-        res |= arrow_data->outline_template[height - outline_height];
+    sized_array_t outline_template = get_template(arrow_data->arrow_direction);
+    if (height >= outline_height && height <= outline_height + outline_template.size - 1)
+        res |= outline_template.array[height - outline_height];
 
     return res;
 }
@@ -50,7 +99,7 @@ uint8_t combine_with_static_elements(uint8_t byte, const global_arrow_data_t* ar
  * Como las flechas pueden estar por arriba/abajo del área visible,
  * necesitamos saber qué partes de la flecha estarán visibles. Procedimiento privado.
  *
- * @param  arrow_data Datos de la flecha según su dirección.
+ * @param  arrow_data Datos globales de la flecha correspondiente.
  * @param  height     La altura actual de la flecha.
  * @return El primer y último índice a renderizar del template de la flecha.
  */
@@ -62,45 +111,32 @@ template_range_t get_template_range(const global_arrow_data_t* arrow_data, uint8
 
     template_range_t res;
 
-    /** TODO: UP y DOWN aparecen en la altura 20
-    *         LEFT y RIGHT aparecen en la altura 17.
-    *         Todas las flechas desaparecen después de la altura 127.
-    */
-    uint8_t template_size = arrow_data->template_size;
+    sized_array_t arrow_template = get_template(arrow_data->arrow_direction);
 
     if (height <= HORIZONTAL_SEPARATOR_POSITION) {
         res.start = HORIZONTAL_SEPARATOR_POSITION - height + 1;
-        res.end   = template_size - 1;
-    } else if (height + template_size > MAX_HEIGHT_VALUE + 1) {
+        res.end   = arrow_template.size - 1;
+    } else if (height + arrow_template.size > MAX_HEIGHT_VALUE + 1) {
         res.start = 0;
         res.end   = MAX_HEIGHT_VALUE - height;
     } else {
         res.start = 0;
-        res.end   = template_size - 1;
+        res.end   = arrow_template.size - 1;
     }
 
     return res;
 }
 
-/**
- * @brief Dado un tipo de flecha y una altura, setea el cursor y manda al display los bytes correspondientes.
- * 
- * @param arrow_data Datos según el tipo de flecha.
- * @param height     Columna del display donde comenzar a escribir los bytes.
- * @param is_outline Determina si dibujar el contorno o la flecha.
- * 
- * @pre Los parámetros cumplen: page <= 3 && column + start <= 127.
- */
-void render_arrow_template(const global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline) {
+void render_arrow(const global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline) {
 
     template_range_t range = get_template_range(arrow_data, height);
     set_cursor_position(arrow_data->page, height + range.start);
 
     const uint8_t* template_aux;
     if (is_outline)
-        template_aux = arrow_data->outline_template;
+        template_aux = get_template_outline(arrow_data->arrow_direction).array;
     else
-        template_aux = arrow_data->arrow_template;
+        template_aux = get_template(arrow_data->arrow_direction).array;
 
     /* Iniciamos en la posición correspondiente del template seleccionado. */
     template_aux += range.start;
@@ -129,49 +165,14 @@ void init_gui(void) {
             }
         }
     }
-    render_arrow_template(&left_arrow_data, left_arrow_data.outline_height, 1);
-    render_arrow_template(&right_arrow_data, right_arrow_data.outline_height, 1);
-    render_arrow_template(&up_arrow_data, up_arrow_data.outline_height, 1);
-    render_arrow_template(&down_arrow_data, down_arrow_data.outline_height, 1);
+    render_arrow(&left_arrow_data, left_arrow_data.outline_height, 1);
+    render_arrow(&right_arrow_data, right_arrow_data.outline_height, 1);
+    render_arrow(&up_arrow_data, up_arrow_data.outline_height, 1);
+    render_arrow(&down_arrow_data, down_arrow_data.outline_height, 1);
 }
 
-/**
- * @brief Obtener struct de datos globales de la flecha según su dirección.
- *
- * @param direction La dirección de la flecha.
- * @return Un puntero al struct de datos correspondiente.
- */
-global_arrow_data_t* get_arrow_data_by_direction(arrow_direction_t direction) {
+void clean_arrow(const global_arrow_data_t* arrow_data, uint8_t height) {
 
-    global_arrow_data_t* res;
-    switch (direction) {
-        case UP:
-            res = &up_arrow_data;
-            break;
-        case DOWN:
-            res = &down_arrow_data;
-            break;
-        case LEFT:
-            res = &left_arrow_data;
-            break;
-        case RIGHT:
-            res = &right_arrow_data;
-            break;
-        default:
-            break;
-    }
-
-    return res;
-}
-
-void render_arrow(arrow_direction_t direction, uint8_t height, uint8_t is_outline) {
-    const global_arrow_data_t* arrow_data = get_arrow_data_by_direction(direction);
-    render_arrow_template(arrow_data, height, is_outline);
-}
-
-void clean_arrow(arrow_direction_t direction, uint8_t height) {
-
-    const global_arrow_data_t* arrow_data = get_arrow_data_by_direction(direction);
     template_range_t range = get_template_range(arrow_data, height);
 
     /* Establecemos las páginas correspondientes a la dirección de la flecha. */
@@ -201,7 +202,7 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
 
     for (uint8_t character = 0; character < size; character++) {
 
-        const uint8_t* template = numbers_5x3[buff[character] - '0'];  /** TODO: por ahora solo para números. */
+        const uint8_t* template = numbers_5x3[buff[character] - '!'];
 
         for (uint8_t column = 0; column < 5; column++) {
 
@@ -229,40 +230,4 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
             write_data(columns[column] & 0xFF);
         }
     }
-}
-
-void reset_counter(gui_counter_t* counter) {
-
-    for (uint8_t i = 0; i < counter->digit_amount; i++) {
-        counter->digits[i] = '0';
-    }
-}
-
-void gui_increment_counter(gui_counter_t* counter, uint8_t value) {
-
-    /** TODO: Medio caquita esto. Si se les ocurre una forma más simple y legible, bienvenida sea! */
-    for (uint8_t increment = 0; increment < value; increment++) {
-
-        uint8_t carry = 1;
-        for (uint8_t i = counter->digit_amount; i; i--) {
-            uint8_t digit_index = i - 1;
-
-            if (carry) {
-                counter->digits[digit_index]++;
-                carry = 0;
-            }
-
-            if (counter->digits[digit_index] > '9') {
-                counter->digits[digit_index] = '0';
-                carry = 1;
-            }
-
-            if (!carry)
-                break;
-        }
-    }
-
-    /* Overflow. */
-    if (counter->digits[0] > '9')
-        reset_counter(counter);
 }
