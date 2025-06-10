@@ -20,14 +20,31 @@
 /* Estado global del juego */
 /*=========================*/
 
+/* Datos globales de flechas. */
+global_arrow_data_t left_arrow_data = {
+    RIGHT, LEFT_RIGHT_ARROW_SIZE, {}, 0, 0, RIGHT_OUTLINE_HIGHT, INIT_SPEED, 0, STARTING_ARROW_HEIGHT_LEFT_RIGHT
+};
+
+global_arrow_data_t down_arrow_data = {
+    DOWN, UP_DOWN_ARROW_SIZE, {}, 0, 0, DOWN_OUTLINE_HIGHT, INIT_SPEED, 1, STARTING_ARROW_HEIGHT_UP_DOWN
+};
+
+global_arrow_data_t up_arrow_data = {
+    UP, UP_DOWN_ARROW_SIZE, {}, 0, 0, UP_OUTLINE_HIGHT, INIT_SPEED, 2, STARTING_ARROW_HEIGHT_UP_DOWN
+};
+
+global_arrow_data_t right_arrow_data = {
+    LEFT, LEFT_RIGHT_ARROW_SIZE, {}, 0, 0, LEFT_OUTLINE_HIGHT, INIT_SPEED, 3, STARTING_ARROW_HEIGHT_LEFT_RIGHT
+};
+
 /* Juntamos todos los datos en un array para simplificar algoritmos. */
 global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_data, &up_arrow_data, &left_arrow_data};
 
 /* Contadores. */
 uint8_t score_counter_array[4];
 uint8_t level_counter_array[1];
-gui_counter_t score = {4, &score_counter_array};
-gui_counter_t level = {1, &level_counter_array};
+gui_counter_t score = {4, score_counter_array};
+gui_counter_t level = {1, level_counter_array};
 
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
@@ -187,47 +204,6 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
 }
 
 /**
- * @brief Sortea y setea el siguiente estado del juego según el nivel.
- */
-void next_game_state(void) {
-    uint8_t rand_int = rand() & 0x0F;
-    if (rand_int >= PROBABILITY_ARRAY_SIZE)
-        rand_int -= PROBABILITY_ARRAY_SIZE;
-
-    current_sequence_mode = state_probability_array[get_current_level()-1][rand_int];
-}
-
-void next_sequence(void) {
-    /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
-    uint8_t level_index = get_current_level() - 1;
-
-    --current_sequence_iteration;
-    if (!current_sequence_iteration && level_index < MAX_LEVEL) {
-
-        increment_counter(&level, 1);
-        current_sequence_iteration = sequence_iterations_per_level[++level_index];
-
-    } else if (!current_sequence_iteration) {
-        /** TODO: Fin del juego. */
-        ASSERT(0);
-    }
-
-    global_arrow_data_t* next_arrow = 0;
-    switch(current_sequence_mode) {
-        case SINGLE:
-            next_arrow = generate_sequence_single();
-            break;
-        default:  /* NONE. */
-            break;
-    }
-
-    if (next_arrow) {
-        next_game_state(); /** TODO: No queremos hacer esto todas las veces. ¿Ponemos un contador? */
-        add_new_arrow(next_arrow);
-    }
-}
-
-/**
  * @brief Obtener arreglo de columnas disponibles para agregar una nueva flecha.
  * 
  * @param res Puntero al arreglo.
@@ -270,10 +246,51 @@ global_arrow_data_t* generate_sequence_single() {
 
     uint8_t rand_int = rand();
     while ((rand_int & 0x03) >= tope) {
-        rand_int << 1;
+        rand_int <<= 1;
     }
 
     return get_arrow_data(available_columns[rand_int & 0x03]);
+}
+
+/**
+ * @brief Sortea y setea el siguiente estado del juego según el nivel.
+ */
+void next_game_state(void) {
+    uint8_t rand_int = rand() & 0x0F;
+    if (rand_int >= PROBABILITY_ARRAY_SIZE)
+        rand_int -= PROBABILITY_ARRAY_SIZE;
+
+    current_sequence_mode = state_probability_array[get_current_level()-1][rand_int];
+}
+
+void next_sequence(void) {
+    /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
+    uint8_t level_index = get_current_level() - 1;
+
+    --current_sequence_iteration;
+    if (!current_sequence_iteration && level_index < MAX_LEVEL) {
+
+        increment_counter(&level, 1);
+        current_sequence_iteration = sequence_iterations_per_level[++level_index];
+
+    } else if (!current_sequence_iteration) {
+        /** TODO: Fin del juego. */
+        ASSERT(0);
+    }
+
+    global_arrow_data_t* next_arrow = 0;
+    switch(current_sequence_mode) {
+        case SINGLE:
+            next_arrow = generate_sequence_single();
+            break;
+        default:  /* NONE. */
+            break;
+    }
+
+    if (next_arrow) {
+        next_game_state(); /** TODO: No queremos hacer esto todas las veces. ¿Ponemos un contador? */
+        add_new_arrow(next_arrow);
+    }
 }
 
 /**

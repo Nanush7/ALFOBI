@@ -8,7 +8,7 @@
 #define MAX_WIDTH_VALUE               31
 
 typedef struct {
-    uint8_t* array;
+    const uint8_t* array;
     uint8_t size;
 } sized_array_t;
 
@@ -21,23 +21,23 @@ typedef struct {
 sized_array_t get_template(arrow_direction_t direction) {
     sized_array_t res;
 
-    /*switch (direction) {
+    switch (direction) {
         case LEFT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
-            res.array = &template_left;
+            res.array = template_left;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
-            res.array = &template_up;
+            res.array = template_up;
         case DOWN:
             res.size = UP_DOWN_ARROW_SIZE;
-            res.array = &template_down;
+            res.array = template_down;
         case RIGHT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
-            res.array = &template_right;
+            res.array = template_right;
         default:
             ASSERT(0);
             break;
-    } */
+    }
 
     return res;
 }
@@ -51,23 +51,23 @@ sized_array_t get_template(arrow_direction_t direction) {
 sized_array_t get_template_outline(arrow_direction_t direction) {
     sized_array_t res;
 
-    /* switch (direction) {
+    switch (direction) {
         case LEFT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
-            res.array = &template_left_outline;
+            res.array = template_left_outline;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
-            res.array = &template_up_outline;
+            res.array = template_up_outline;
         case DOWN:
             res.size = UP_DOWN_ARROW_SIZE;
-            res.array = &template_down_outline;
+            res.array = template_down_outline;
         case RIGHT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
-            res.array = &template_right_outline;
+            res.array = template_right_outline;
         default:
             ASSERT(0);
             break;
-    }*/
+    }
 
     return res;
 }
@@ -89,7 +89,7 @@ uint8_t combine_with_static_elements(uint8_t byte, global_arrow_data_t* arrow_da
 
     sized_array_t outline_template = get_template(arrow_data->arrow_direction);
     if (height >= outline_height && height <= outline_height + outline_template.size - 1)
-        res |= outline_template.array[height - outline_height];
+        res |= outline_template.array[(uint8_t)(height - outline_height)];
 
     return res;
 }
@@ -132,7 +132,7 @@ void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_ou
     template_range_t range = get_template_range(arrow_data, height);
     set_cursor_position(arrow_data->page, height + range.start);
 
-    uint8_t* template_aux;
+    const uint8_t* template_aux;
     if (is_outline)
         template_aux = get_template_outline(arrow_data->arrow_direction).array;
     else
@@ -165,10 +165,6 @@ void init_gui(void) {
             }
         }
     }
-    render_arrow(&left_arrow_data, left_arrow_data.outline_height, 1);
-    render_arrow(&right_arrow_data, right_arrow_data.outline_height, 1);
-    render_arrow(&up_arrow_data, up_arrow_data.outline_height, 1);
-    render_arrow(&down_arrow_data, down_arrow_data.outline_height, 1);
 }
 
 void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height) {
@@ -202,7 +198,7 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
 
     for (uint8_t character = 0; character < size; character++) {
 
-        uint8_t* template = numbers_5x3[buff[character] - '!'];
+        const uint8_t* template = numbers_5x3[buff[character] - '!'];
 
         for (uint8_t column = 0; column < 5; column++) {
 

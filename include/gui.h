@@ -52,23 +52,6 @@ typedef struct {
     uint8_t end   : 4;
 } template_range_t;
 
-/* Datos globales de flechas. */
-global_arrow_data_t left_arrow_data = {
-    RIGHT, LEFT_RIGHT_ARROW_SIZE, {}, 0, 0, RIGHT_OUTLINE_HIGHT, INIT_SPEED, 0, STARTING_ARROW_HEIGHT_LEFT_RIGHT
-};
-
-global_arrow_data_t down_arrow_data = {
-    DOWN, UP_DOWN_ARROW_SIZE, {}, 0, 0, DOWN_OUTLINE_HIGHT, INIT_SPEED, 1, STARTING_ARROW_HEIGHT_UP_DOWN
-};
-
-global_arrow_data_t up_arrow_data = {
-    UP, UP_DOWN_ARROW_SIZE, {}, 0, 0, UP_OUTLINE_HIGHT, INIT_SPEED, 2, STARTING_ARROW_HEIGHT_UP_DOWN
-};
-
-global_arrow_data_t right_arrow_data = {
-    LEFT, LEFT_RIGHT_ARROW_SIZE, {}, 0, 0, LEFT_OUTLINE_HIGHT, INIT_SPEED, 3, STARTING_ARROW_HEIGHT_LEFT_RIGHT
-};
-
 /**
  * @brief Inicializar.
  */
@@ -83,7 +66,7 @@ void init_gui(void);
  *
  * @pre Los parámetros cumplen: page <= 3 && column + start <= 127.
  */
-void render_arrow(const global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline);
+void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline);
 
 /**
  * @brief Limpiar posición donde había flecha en el display.
@@ -91,7 +74,7 @@ void render_arrow(const global_arrow_data_t* arrow_data, uint8_t height, uint8_t
  * @param arrow_data  Los datos globales de la flecha a dibujar.
  * @param height      La altura actual de la flecha (entre 17 y 127 para derecha/izquiera y entre 20 y 127 para arriba/abajo).
  */
-void clean_arrow(const global_arrow_data_t* arrow_data, uint8_t height);
+void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height);
 
 /**
  * @brief Imprime arreglo de caracteres en una posición dada del display.
