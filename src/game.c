@@ -2,20 +2,6 @@
 #include <random.h>
 #include <assert_test.h>
 
-#define STARTING_ARROW_HEIGHT_UP_DOWN    20
-#define STARTING_ARROW_HEIGHT_LEFT_RIGHT 17
-#define LEFT_OUTLINE_HEIGHT              120
-#define UP_OUTLINE_HEIGHT                121
-#define DOWN_OUTLINE_HEIGHT              122
-#define RIGHT_OUTLINE_HEIGHT             120
-#define PROBABILITY_ARRAY_SIZE           10
-#define MAX_LEVEL                        3
-/*
- * Se decrementan los ticks cada 50ms (MS_BETWEEN_TIMER_INTERRUPTS).
- * Así que nos queda que bajan cada 500ms.
- */
-#define INIT_SPEED 10
-
 /*=========================*/
 /* Estado global del juego */
 /*=========================*/
@@ -34,7 +20,7 @@ global_arrow_data_t up_arrow_data = {
 };
 
 global_arrow_data_t right_arrow_data = {
-    LEFT, LEFT_RIGHT_ARROW_SIZE, {}, LEFT_OUTLINE_HIGHT, 3, STARTING_ARROW_HEIGHT_LEFT_RIGHT
+    LEFT, LEFT_RIGHT_ARROW_SIZE, {}, LEFT_OUTLINE_HEIGHT, 3, STARTING_ARROW_HEIGHT_LEFT_RIGHT
 };
 
 /* Juntamos todos los datos en un array para simplificar algoritmos. */
@@ -270,7 +256,7 @@ void init_column(global_arrow_data_t* column_data) {
             break;
         case LEFT:
             column_data->page = 3;
-            column_data->outline_height = LEFT_OUTLINE_HIGHT;
+            column_data->outline_height = LEFT_OUTLINE_HEIGHT;
             break;
         default:
             ASSERT(0);

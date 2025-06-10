@@ -2,42 +2,8 @@
 #define GUI_H
 
 #include <stdint.h>
+#include <game_data.h>
 #include "templates.h"
-
-/** TODO: Mover a game las estructuras de abajo. */
-#define MAX_ARROW_COUNT_PER_COLUMN 6
-
-#define STARTING_ARROW_HEIGHT_UP_DOWN 20
-#define STARTING_ARROW_HEIGHT_LEFT_RIGHT 17
-#define LEFT_OUTLINE_HIGHT 120
-#define UP_OUTLINE_HIGHT 121
-#define DOWN_OUTLINE_HIGHT 122
-#define RIGHT_OUTLINE_HIGHT 120
-#define PROBABILITY_ARRAY_SIZE 10
-#define MAX_LEVEL 3
-#define INIT_SPEED 10
-
-typedef enum {
-    RIGHT = 0,
-    DOWN  = 1,
-    UP    = 2,
-    LEFT  = 3,
-} arrow_direction_t;
-
-typedef struct {
-    arrow_direction_t direction; /** TODO: Esto puede no ser necesario ya que guardamos todas las flechas con misma dirección en un mismo arreglo. */
-    uint8_t height; 
-    uint8_t active;
-} arrow_t;
-
-typedef struct {
-    const arrow_direction_t arrow_direction;
-    const uint8_t template_size; /** Este se puede deducir a partir de la dirección */
-    arrow_t arrows[MAX_ARROW_COUNT_PER_COLUMN];
-    uint8_t outline_height; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
-    uint8_t page; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
-    uint8_t starting_arrow_height; /** Este se puede deducir a partir de la dirección */
-} global_arrow_data_t;
 
 struct arrow {
     uint8_t height;
@@ -48,6 +14,11 @@ typedef struct {
     uint8_t start : 4;
     uint8_t end   : 4;
 } template_range_t;
+
+typedef struct {
+    const uint8_t digit_amount;
+    uint8_t* digits;  /* Cada dígito en una posición del array (MSF). Más eficiente para escribir en el display. */
+} gui_counter_t;
 
 /**
  * @brief Inicializar.

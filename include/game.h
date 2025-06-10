@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <gui.h>
 #include <timer.h>
+#include <game_data.h>
 
 typedef enum {
     MAIN,
@@ -20,11 +21,6 @@ typedef enum {
     REPEAT_SINGLE,
     REPEAT_DOUBLE
 } sequence_mode_t;
-
-typedef struct {
-    const uint8_t digit_amount;
-    uint8_t* digits;  /* Cada dígito en una posición del array (MSF). Más eficiente para escribir en el display. */
-} gui_counter_t;
 
 /**
  * @brief Inicializa los timers y el estado del juego.
