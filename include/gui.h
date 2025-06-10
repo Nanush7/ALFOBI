@@ -5,7 +5,7 @@
 #include "templates.h"
 
 /** TODO: Mover a game las estructuras de abajo. */
-#define MAX_ARROW_COUNT_PER_COLUMN 10
+#define MAX_ARROW_COUNT_PER_COLUMN 6
 
 #define STARTING_ARROW_HEIGHT_UP_DOWN 20
 #define STARTING_ARROW_HEIGHT_LEFT_RIGHT 17
@@ -25,21 +25,18 @@ typedef enum {
 } arrow_direction_t;
 
 typedef struct {
-    arrow_direction_t direction;
+    arrow_direction_t direction; /** TODO: Esto puede no ser necesario ya que guardamos todas las flechas con misma dirección en un mismo arreglo. */
     uint8_t height; 
-    uint8_t active; /* A modo de prototipo! */
+    uint8_t active;
 } arrow_t;
 
 typedef struct {
     const arrow_direction_t arrow_direction;
-    const uint8_t template_size;
+    const uint8_t template_size; /** Este se puede deducir a partir de la dirección */
     arrow_t arrows[MAX_ARROW_COUNT_PER_COLUMN];
-    uint8_t ticks_lower_arrows;
-    uint8_t counter_next_arrow;
-    uint8_t outline_height;
-    uint8_t speed;
-    uint8_t page;
-    uint8_t starting_arrow_height;
+    uint8_t outline_height; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
+    uint8_t page; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
+    uint8_t starting_arrow_height; /** Este se puede deducir a partir de la dirección */
 } global_arrow_data_t;
 
 struct arrow {

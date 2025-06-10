@@ -25,15 +25,19 @@ sized_array_t get_template(arrow_direction_t direction) {
         case LEFT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
             res.array = template_left;
+            break;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = template_up;
+            break;
         case DOWN:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = template_down;
+            break;
         case RIGHT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
             res.array = template_right;
+            break;
         default:
             ASSERT(0);
             break;
@@ -55,15 +59,19 @@ sized_array_t get_template_outline(arrow_direction_t direction) {
         case LEFT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
             res.array = template_left_outline;
+            break;
         case UP:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = template_up_outline;
+            break;
         case DOWN:
             res.size = UP_DOWN_ARROW_SIZE;
             res.array = template_down_outline;
+            break;
         case RIGHT:
             res.size = LEFT_RIGHT_ARROW_SIZE;
             res.array = template_right_outline;
+            break;
         default:
             ASSERT(0);
             break;
