@@ -1,4 +1,5 @@
-#include <templates.h>
+#include <game_data.h>
+#include <assert_test.h>
 
 const uint8_t template_left[LEFT_RIGHT_ARROW_SIZE] = {
     0b00001000,
@@ -129,3 +130,71 @@ const uint8_t numbers_5x3[58][5] = {
     {0b101, 0b101, 0b111, 0b010, 0b010}, /* Y */
     {0b111, 0b001, 0b010, 0b100, 0b111}, /* Z */
 };
+
+
+/* @brief Obtener template del contorno la flecha y su tamaño según su dirección.
+ *
+ * @param  direction La direccion de la flecha correspondiente.
+ * @return Estructura del tipo sized_array_t
+ */
+sized_array_t get_template_outline(arrow_direction_t direction) {
+    sized_array_t res;
+
+    switch (direction) {
+        case LEFT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = template_left_outline;
+            break;
+        case UP:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = template_up_outline;
+            break;
+        case DOWN:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = template_down_outline;
+            break;
+        case RIGHT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = template_right_outline;
+            break;
+        default:
+            ASSERT(0);
+            break;
+    }
+
+    return res;
+}
+
+/**
+ * @brief Obtener template de la flecha y su tamaño según su dirección.
+ *
+ * @param  direction La direccion de la flecha correspondiente.
+ * @return Estructura del tipo sized_array_t.
+ */
+sized_array_t get_template(arrow_direction_t direction) {
+    sized_array_t res;
+
+    switch (direction) {
+        case LEFT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = template_left;
+            break;
+        case UP:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = template_up;
+            break;
+        case DOWN:
+            res.size = UP_DOWN_ARROW_SIZE;
+            res.array = template_down;
+            break;
+        case RIGHT:
+            res.size = LEFT_RIGHT_ARROW_SIZE;
+            res.array = template_right;
+            break;
+        default:
+            ASSERT(0);
+            break;
+    }
+
+    return res;
+}

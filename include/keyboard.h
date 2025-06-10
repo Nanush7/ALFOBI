@@ -44,7 +44,7 @@ void init_keyboard(void);
 keys_t get_pressed_keys(void);
 
 /**
- * @brief Chequea y guarda los botones presionados.
+ * @brief Chequear y guarda los botones presionados.
  */
 void handle_keypress(void);
 

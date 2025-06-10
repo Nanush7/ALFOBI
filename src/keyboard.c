@@ -34,12 +34,12 @@ void init_keyboard(void) {
     P2SEL  &= ~ROWS;
     P2SEL2 &= ~ROWS;
 
-    P1DIR |= COLUMNS; /* Columnas output. */
-    P2DIR &= ~ROWS;   /* Filas input. */
+    P1DIR |= COLUMNS;        /* Columnas output. */
+    P2DIR &= ~ROWS;          /* Filas input. */
 
-    P1OUT &= ~COLUMNS; /* Inicializar columnas en bajo. */
+    P1OUT &= ~COLUMNS;       /* Inicializar columnas en bajo. */
 
-    P2REN |= ROWS; /* Habilitar resistencias pull-up en ROWS */
+    P2REN |= ROWS;           /* Habilitar resistencias pull-up en ROWS */
     P2OUT |= ROWS;
 
     P2IES |=  ROWS;          /* Interrupción en flanco descendente. */

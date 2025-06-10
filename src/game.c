@@ -1,8 +1,9 @@
-#include "game_data.h"
-#include "templates.h"
 #include <game.h>
+#include <game_data.h>
 #include <random.h>
+#include <keyboard.h>
 #include <assert_test.h>
+#include <timer.h>
 
 /*=========================*/
 /* Estado global del juego */
@@ -58,6 +59,9 @@ uint8_t speed = INIT_SPEED;
 /* Contador para saber si ya se pueden bajar las flechas. */
 uint8_t ticks_lower_arrows = INIT_SPEED;
 
+/* Vidas */
+uint8_t lives = INIT_LIVES;
+
 /*=============================*/
 /* Fin estado global del juego */
 /*=============================*/
@@ -71,7 +75,7 @@ uint8_t ticks_lower_arrows = INIT_SPEED;
  *
  * @pre level es un contador de un solo dígito.
  */
-uint8_t get_current_level() {
+uint8_t get_current_level(void) {
     return level.digits[0] - '0';
 }
 
@@ -106,6 +110,13 @@ global_arrow_data_t* get_arrow_data(arrow_direction_t direction) {
 }
 
 /**
+ * @brief Decrementar contador de vidas y actualizar contador en el display.
+ */
+void decrement_lives(void) {
+    /** TODO */
+}
+
+/**
  * @brief Dada una columna, baja todas las flechas una posición.
  *
  * @param column Los datos de la columna correspondiente.
@@ -121,6 +132,7 @@ void lower_column_arrows(global_arrow_data_t* column) {
         arrow_ptr->height++;
         if (arrow_ptr->height > 127) { /** TODO: pasar a constante. */
             arrow_ptr->active = 0;
+            decrement_lives();
         } else {
             render_arrow(column, arrow_ptr->height, 0);
         }
@@ -144,10 +156,92 @@ void lower_arrows(void) {
 }
 
 /**
+ * @brief Manejar la pulsación sobre una columna específica.
+ * Calcula puntaje y vidas.
+ *
+ * @param arrow_data Los datos globales de la columna correspondiente.
+ */
+void handle_column_keypress(global_arrow_data_t* arrow_data) {
+    /* Buscamos la flecha que se encuentra más abajo. */
+    arrow_t* lowest_arrow = 0;
+    uint8_t arrow_size = get_template(arrow_data->arrow_direction).size;
+
+    for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
+        arrow_t* candidate = &arrow_data->arrows[i];
+        /* Si la flecha no está activa o si está por debajo del outline, la pulsación no actuará sobre ella. */
+        if (!candidate->active || candidate->height >= arrow_data->outline_height + arrow_size)
+            continue;
+
+        if (!lowest_arrow) {
+            lowest_arrow = candidate;
+            continue;
+        }
+
+        /* La flecha con mayor height es la que se encuentra más baja en el display. */
+        if (candidate->height > lowest_arrow->height) {
+            lowest_arrow = candidate;
+        }
+    }
+
+    /* Si no se encuentra, quiere decir que no había flechas, por lo que la pulsación fue errónea y le sacamos una vida. */
+    if (!lowest_arrow) {
+        decrement_lives();
+        return;
+    }
+
+    /* Si se encuentra, vemos qué tan abajo estaba la flecha. Si estaba lo suficientemente abajo manejamos puntuación, si no, le sacamos una vida por gil. */
+    if (lowest_arrow->height <= arrow_data->outline_height - arrow_size) {
+        decrement_lives();
+    } else {
+        /* Asumimos que no se desborda. */
+        int16_t score_increment = MAX_SCORE_FOR_ARROW - abs((int16_t)lowest_arrow->height - (int16_t)arrow_data->outline_height);
+        increment_counter(&score, score_increment);
+        render_chars(score.digits, 4, 0, 6);
+    }
+
+    lowest_arrow->active = 0;
+    clean_arrow(arrow_data, lowest_arrow->height);
+}
+
+/**
+ * @brief Manejar teclas presionadas.
+ */
+void handle_keys(void) {
+    keys_t pressed_keys = get_pressed_keys();
+
+    if (pressed_keys.aster) { /* Pause key. */
+        /** TODO: Definir este paused e implementar la pausa. */
+        // paused = !paused;
+    }
+
+    /*
+    if (paused)
+        return;
+    */
+
+    if (pressed_keys.two) { /* Left arrow. */
+        handle_column_keypress(&left_arrow_data);
+    }
+
+    if (pressed_keys.five) { /* Up arrow. */
+        handle_column_keypress(&up_arrow_data);
+    }
+
+    if (pressed_keys.eight) { /* Down arrow. */
+        handle_column_keypress(&down_arrow_data);
+    }
+
+    if (pressed_keys.zero) { /* Right arrow. */
+        handle_column_keypress(&right_arrow_data);
+    }
+}
+
+/**
  * @brief Nuevo tick del juego.
  * Baja flechas y actualiza juego (secuencia, dificultad, etc.)
  */
 void game_tick(void) {
+    handle_keys();
     lower_arrows();
     next_sequence();
 }
@@ -177,13 +271,12 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
  * 
  * @returns Los datos globales de la flecha generada o NULL si no hay columnas disponibles.
  */
-global_arrow_data_t* generate_sequence_single() {
-    /** TODO: Mejorar selección. Usar rand_in_range. */
+global_arrow_data_t* generate_sequence_single(void) {
     return all_global_arrow_data[rand() & 0b11];
 }
 
 /**
- * @brief Sortea y setea el siguiente estado del juego según el nivel.
+ * @brief Sortear y setear el siguiente estado del juego según el nivel.
  */
 void next_game_state(void) {
     uint8_t rand_int = rand() & 0x0F;
@@ -324,6 +417,7 @@ void init_game(void) {
     speed = INIT_SPEED;
     ticks_next_arrow = 0;
     ticks_lower_arrows = speed;
+    lives = INIT_LIVES;
 
     timer_t timer_lower_arrows;
     init_timer(&timer_lower_arrows, 1, game_tick);

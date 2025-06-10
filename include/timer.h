@@ -29,21 +29,21 @@ typedef struct {
 } timer_t;
 
 /**
- * @brief Inicializa un timer recurrente.
+ * @brief Inicializar un timer recurrente.
  *
  * @param target_interval Cada cuántas interrupciones del reloj se encola la 
  */
 void init_timer(timer_t* timer, uint8_t target, func* callback);
 
 /**
- * @brief Agrega timer lógico a la lista de timers lógicos.
+ * @brief Agregar timer lógico a la lista de timers lógicos.
  * 
  * @param timer El timer lógico a agregar.
  */
 void add_timer(timer_t timer);
 
 /**
- * @brief Incrementa los timers lógicos registrados. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
+ * @brief Incrementar los timers lógicos registrados. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
 */
 void increment_counters(void);
 

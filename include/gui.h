@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 #include <game_data.h>
-#include "templates.h"
 
 struct arrow {
     uint8_t height;

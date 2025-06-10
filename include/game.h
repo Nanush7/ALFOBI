@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 #include <gui.h>
-#include <timer.h>
-#include <game_data.h>
 
 typedef enum {
     MAIN,
@@ -27,7 +25,7 @@ typedef enum {
  */
 void init_game(void);
 
-/**
+/**r
  * @brief Bajar las flechas que corresponda.
  */
 void lower_arrows(void);
@@ -43,14 +41,14 @@ void next_sequence(void);
  *
  * @param counter El contador a modificar.
  */
-void reset_counter(gui_counter_t* counter);
+void reset_cournter(gui_counter_t* counter);
 
 /** TODO: El nombre es porque tiene conflicto con el de timer.h.
  * @brief Incrementa contador según el valor pasado por parámetro.
  *
  * @param counter El contador a modificar.
  * @param value   El valor a sumar.
- *
+ *r
  * @warning Hay overflow, pasa a cero.
  */
 void increment_counter(gui_counter_t* counter, uint8_t value);

@@ -14,17 +14,17 @@
 #include <func_queue.h>
 
 /**
- * @brief Configura e inicializa el timer.
+ * @brief Configurar e inicializa el timer.
  */
 void init_timer_hw(void);
 
 /**
- * @brief Deshabilita las interrupciones del timer de hardware (CCIE0)
+ * @brief Deshabilitar las interrupciones del timer de hardware (CCIE0)
  */
 void disable_interrupt_timerhw(void);
 
 /**
-* @brief Habilita las interrupciones del timer de hardware (CCIE0)
+* @brief Habilitar las interrupciones del timer de hardware (CCIE0)
 *
 */
 void enable_interrupt_timerhw(void);
@@ -37,7 +37,7 @@ void enable_interrupt_timerhw(void);
 void set_timer_A1_callback(func* callback);
 
 /**
- * @brief Habilita TimerA1.
+ * @brief Habilitar TimerA1.
  * 
  * @note TimerA1 se deshabilita cuando interrumpe.
  */
