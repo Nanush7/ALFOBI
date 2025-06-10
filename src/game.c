@@ -1,3 +1,5 @@
+#include "game_data.h"
+#include "templates.h"
 #include <game.h>
 #include <random.h>
 #include <assert_test.h>
@@ -126,8 +128,8 @@ void lower_column_arrows(global_arrow_data_t* column) {
 }
 
 void lower_arrows(void) {
+    ticks_lower_arrows--;
     if (ticks_lower_arrows) {
-        ticks_lower_arrows--;
         return;
     }
 
@@ -168,10 +170,6 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
             break;
         }
     }
-
-    /* La proxima flecha puede aparecer después de que la anterior bajó lo suficiente. */
-    /* LEFT_RIGHT_ARROW_SIZE porque es el más grande entre los dos tamaños de flechas. */
-    ticks_next_arrow = LEFT_RIGHT_ARROW_SIZE * speed;
 }
 
 /**
@@ -196,6 +194,9 @@ void next_game_state(void) {
 }
 
 void next_sequence(void) {
+    if (ticks_next_arrow)
+        return;
+
     /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
     uint8_t level_number = get_current_level();
 
@@ -219,6 +220,10 @@ void next_sequence(void) {
         default:  /* NONE. */
             break;
     }
+
+    /* La proxima flecha puede aparecer después de que la anterior bajó lo suficiente. */
+    /* LEFT_RIGHT_ARROW_SIZE porque es el más grande entre los dos tamaños de flechas. */
+    ticks_next_arrow = LEFT_RIGHT_ARROW_SIZE + VERTICAL_ARROW_SPACING;
 
     if (next_arrow) {
         --current_sequence_iteration;
@@ -314,13 +319,13 @@ void init_game(void) {
         render_arrow(all_global_arrow_data[i], all_global_arrow_data[i]->outline_height, 1);
     }
 
-    current_sequence_mode = NONE;
+    current_sequence_mode = SINGLE;
     current_sequence_iteration = sequence_iterations_per_level[0];
     speed = INIT_SPEED;
     ticks_next_arrow = 0;
     ticks_lower_arrows = speed;
 
     timer_t timer_lower_arrows;
-    init_timer(&timer_lower_arrows, 4, game_tick);
+    init_timer(&timer_lower_arrows, 1, game_tick);
     add_timer(timer_lower_arrows);
 }

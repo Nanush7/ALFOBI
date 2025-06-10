@@ -19,8 +19,8 @@ void enable_interrupt_timerhw(void) {
 
 void init_timer_hw(void) {
     /* Seleccionamos el source del ACLK. */
-    BCSCTL3  = (BCSCTL3 & ~LFXT1S_3);
-    BCSCTL3 |= LFXT1S_0;
+    BCSCTL3 &= ~LFXT1S_3;
+    BCSCTL3 |=  LFXT1S_0;
 
     /* Seteamos los TACCRx para que interrumpan después de cierta cantidad de ticks. */
     TA0CCR0 = TA0CCR0_TARGET;
