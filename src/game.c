@@ -109,7 +109,7 @@ global_arrow_data_t* get_arrow_data(arrow_direction_t direction) {
  */
 void lower_column_arrows(global_arrow_data_t* column) {
     for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
-        arrow_t* arrow_ptr = column->arrows + i;
+        arrow_t* arrow_ptr = &column->arrows[i];
 
         if (!arrow_ptr->active)
             continue;
@@ -267,10 +267,10 @@ void next_sequence(void) {
     /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
     uint8_t level_index = get_current_level() - 1;
 
-    --current_sequence_iteration;
     if (!current_sequence_iteration && level_index < MAX_LEVEL) {
 
         increment_counter(&level, 1);
+        render_chars(level_counter_array, 1, 0, 6);
         current_sequence_iteration = sequence_iterations_per_level[++level_index];
 
     } else if (!current_sequence_iteration) {
@@ -288,8 +288,12 @@ void next_sequence(void) {
     }
 
     if (next_arrow) {
-        next_game_state(); /** TODO: No queremos hacer esto todas las veces. ¿Ponemos un contador? */
+        --current_sequence_iteration;
         add_new_arrow(next_arrow);
+    }
+
+    if (next_arrow || current_sequence_mode == NONE) {
+        next_game_state(); /** TODO: No queremos hacer esto todas las veces. ¿Ponemos un contador? */
     }
 }
 
@@ -381,8 +385,15 @@ void init_game(void) {
     reset_counter(&score);
     reset_counter(&level);
     increment_counter(&level, 1); /* Empieza en nivel 1. */
+    render_chars(score_counter_array, 4, 0, 0);
+    render_chars(level_counter_array, 1, 0, 6);
+
+    for (uint8_t i = 0; i < 4; i++) {
+        render_arrow(all_global_arrow_data[i], all_global_arrow_data[i]->outline_height, 1);
+    }
 
     current_sequence_mode = NONE;
+    current_sequence_iteration = sequence_iterations_per_level[0];
 
     timer_t timer_lower_arrows;
     init_timer(&timer_lower_arrows, 4, game_tick);

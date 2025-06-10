@@ -7,6 +7,7 @@
 #include <gui.h>
 #include <keyboard.h>
 #include <random.h>
+#include <game.h>
 
 /** TODO: Mejorar generación de números random. */
 uint8_t random_byte = 0;
@@ -21,17 +22,10 @@ int main() {
     init_keyboard();
     init_timer_hw();
     init_random(&random_byte);
+    init_gui();
+    init_game();
 
     __enable_interrupt();
-
-
-    // render_chars(score.digits, score.digit_amount, 0, 6);
-    // render_chars(level.digits, level.digit_amount, 0, 12);
-
-    // for (uint8_t i = 0; i < 4; i++) {
-    //     arrow_t* arrow_ptr = arrows + i;
-    //     render_arrow(arrow_ptr->direction, arrow_ptr->height, 0);
-    // }
 
     while (1) {
         while (!queue_is_empty()) {
