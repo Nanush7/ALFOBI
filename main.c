@@ -16,8 +16,13 @@ int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    /** TODO: Cambiar nombre para saber qué cola es. */
-    init_queue();
+    // BCSCTL1 &= ~RSEL1;
+    BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
+
+    P1DIR |= BIT0;
+    P1OUT &= ~BIT0;
+
+    init_queue(); /* Cola de funciones. */
     init_i2c(0x3C);
     init_keyboard();
     init_timer_hw();

@@ -67,6 +67,6 @@ __interrupt void Timer0_A0_ISR(void) {
 #pragma vector=TIMER1_A0_VECTOR
 __interrupt void Timer1_A0_ISR(void) {
     disable_timer_A1();
-    ASSERT(callback_timer_A1) /* Si Timer_A1 está prendido, el callback no puede ser NULL. */
+    ASSERT(callback_timer_A1); /* Si Timer_A1 está prendido, el callback no puede ser NULL. */
     add_to_queue(callback_timer_A1);
 }

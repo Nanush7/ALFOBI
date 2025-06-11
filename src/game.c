@@ -295,7 +295,7 @@ void next_sequence(void) {
 
     if (!current_sequence_iteration && level_number >= MAX_LEVEL) {
         /** TODO: Fin del juego. */
-        ASSERT(0);
+        reset_counter(&level);
         return;
     }
 

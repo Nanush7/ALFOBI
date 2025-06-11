@@ -41,7 +41,7 @@ void next_sequence(void);
  *
  * @param counter El contador a modificar.
  */
-void reset_cournter(gui_counter_t* counter);
+void reset_counter(gui_counter_t* counter);
 
 /** TODO: El nombre es porque tiene conflicto con el de timer.h.
  * @brief Incrementa contador según el valor pasado por parámetro.

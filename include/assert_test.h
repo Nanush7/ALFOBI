@@ -5,11 +5,10 @@
 #ifdef DEBUG
 
 #include <msp430.h>
-#define LED3 0x0003
 
 #define ASSERT(expr){\
     if (!(expr)){\
-        P2OUT |= LED3;\
+        P1OUT |= BIT0;\
         while(1){};\
     }\
 }
