@@ -32,8 +32,10 @@ global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_
 /* Contadores. */
 uint8_t score_counter_array[4];
 uint8_t level_counter_array[1];
+uint8_t lives_counter_array[1];
 gui_counter_t score = {4, score_counter_array};
 gui_counter_t level = {1, level_counter_array};
+gui_counter_t lives_counter = {1, lives_counter_array};
 
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
@@ -194,9 +196,10 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
         decrement_lives();
     } else {
         /* Asumimos que no se desborda. */
+        /** TODO: este score no está funcionando cuantitativamente como esperábamos, aunque sí cualitativamente. */
         int16_t score_increment = MAX_SCORE_FOR_ARROW - abs((int16_t)lowest_arrow->height - (int16_t)arrow_data->outline_height);
         increment_counter(&score, score_increment);
-        render_chars(score.digits, 4, 0, 6);
+        render_chars(score.digits, 4, 17, 0);
     }
 
     lowest_arrow->active = 0;
@@ -219,7 +222,7 @@ void handle_keys(void) {
         return;
     */
 
-    if (pressed_keys.two) { /* Left arrow. */
+    if (pressed_keys.zero) { /* Left arrow. */
         handle_column_keypress(&left_arrow_data);
     }
 
@@ -231,7 +234,7 @@ void handle_keys(void) {
         handle_column_keypress(&down_arrow_data);
     }
 
-    if (pressed_keys.zero) { /* Right arrow. */
+    if (pressed_keys.two) { /* Right arrow. */
         handle_column_keypress(&right_arrow_data);
     }
 }
@@ -302,7 +305,7 @@ void next_sequence(void) {
     if (!current_sequence_iteration) {
         current_sequence_iteration = sequence_iterations_per_level[level_number];
         increment_counter(&level, 1);
-        render_chars(level_counter_array, 1, 0, 6);
+        render_chars(level_counter_array, 1, 29, 6);
     }
 
     global_arrow_data_t* next_arrow = 0;
@@ -405,8 +408,13 @@ void init_game(void) {
 
     reset_counter(&score);
     level.digits[0] = '1';
-    render_chars(score_counter_array, 4, 0, 0);
-    render_chars(level_counter_array, 1, 0, 6);
+    lives_counter.digits[0] = INIT_LIVES + '0'; /* Convertimos el valor de vidas a un valor válido ASCII. */
+    render_chars(score_counter_array, score.digit_amount, 17, 0);
+    render_chars(level_counter_array, level.digit_amount, 29, 6);
+    render_chars(lives_counter_array, lives_counter.digit_amount, 29, 12);
+    render_chars("P:", 2, 0, 0);  /* Puntaje. */
+    render_chars("N:", 2, 0, 6);  /* Nivel. */
+    render_chars("V:", 2, 0, 12); /* Vidas. */
 
     for (uint8_t i = 0; i < 4; i++) {
         render_arrow(all_global_arrow_data[i], all_global_arrow_data[i]->outline_height, 1);

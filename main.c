@@ -16,9 +16,11 @@ int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    // BCSCTL1 &= ~RSEL1;
-    BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
+    /* Le subimos la velocidad al master clock. */
+    BCSCTL1 &= ~RSEL2;
+    BCSCTL1 |= RSEL3 | RSEL1 | RSEL0;
 
+    /* LED assert. */
     P1DIR |= BIT0;
     P1OUT &= ~BIT0;
 

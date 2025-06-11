@@ -154,11 +154,19 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
      */
     for (uint8_t page = 0; page < 4; page++) {
 
+        uint8_t empty = 1;
+        for (uint8_t column = 0; column < 5; column++) {
+            if (columns[column] & 0xFF) {
+                empty = 0;
+                break;
+            }
+        }
+
         set_cursor_position(page, y);
         for (uint8_t column = 0; column < 5; column++) {
-            if (page)
-                columns[column] >>= 8;
-            write_data(columns[column] & 0xFF);
+            if (!empty)
+                write_data(columns[column] & 0xFF);
+            columns[column] >>= 8;
         }
     }
 }
