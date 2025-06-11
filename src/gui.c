@@ -22,7 +22,7 @@ uint8_t combine_with_static_elements(uint8_t byte, global_arrow_data_t* arrow_da
     uint8_t res            = byte;
     uint8_t outline_height = arrow_data->outline_height;
 
-    sized_array_t outline_template = get_template(arrow_data->arrow_direction);
+    sized_array_t outline_template = get_template_outline(arrow_data->arrow_direction);
     if (height >= outline_height && height <= outline_height + outline_template.size - 1)
         res |= outline_template.array[(uint8_t)(height - outline_height)];
 
@@ -86,8 +86,6 @@ void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_ou
 
 void init_gui(void) {
 
-    init_display();
-
     /* Limpiamos display */
     set_cursor_position(0, 0);
     for (uint8_t page = 4; page; page--) {
@@ -98,6 +96,18 @@ void init_gui(void) {
             } else {
                 write_data(0x00);
             }
+        }
+    }
+}
+
+void clean_range(uint8_t min_page, uint8_t max_page, uint8_t min_column, uint8_t max_column) {
+    ASSERT(min_page <= max_column && min_column <= max_column && max_column < 128 && max_page < 4);
+
+    for (uint8_t page = min_page; page <= max_page; page++) {
+        set_cursor_position(page, min_column);
+
+        for (uint8_t column = min_column; column <= max_column; column++) {
+            write_data(0x00);
         }
     }
 }
@@ -130,12 +140,18 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
     uint8_t required_shift = MAX_WIDTH_VALUE - (4*size - 1) - x + 1;
 
     /* Para cada columna, calcular para cada caracter, shifteando hacia la izquierda. */
-
     for (uint8_t character = 0; character < size; character++) {
 
-        const uint8_t* template = numbers_5x3[buff[character] - '!'];
+        const uint8_t* template = 0;
+        if (buff[character] != ' ')
+            template = numbers_5x3[buff[character] - '!'];
 
         for (uint8_t column = 0; column < 5; column++) {
+
+            if (buff[character] == ' ') {
+                columns[column] <<= 4;
+                continue;
+            }
 
             columns[column] |= template[column];
 
@@ -146,12 +162,6 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
         }
     }
 
-    /**
-     * TODO: Podríamos hacer que no se escriban las páginas donde no hay ningún pedazo de caracter,
-     * pero no se me ocurrió una forma fácil y capaz que no es necesario (simplemente dedicamos 5 columnas enteras para escribir los chars).
-     * Al empezar a escribir, si no hay modificaciones para la página, no es escribimos nada (tampoco 0s).
-     * Después de que se encontró alguna página con contenido, la próxima vacía termina el algoritmo.
-     */
     for (uint8_t page = 0; page < 4; page++) {
 
         uint8_t empty = 1;

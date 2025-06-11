@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 /* Juego */
-#define INIT_SPEED                 1 /* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
 #define INIT_LIVES                 3
 #define VERTICAL_ARROW_SPACING     7 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
 #define MAX_ARROW_COUNT_PER_COLUMN 6

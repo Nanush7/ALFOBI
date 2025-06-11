@@ -36,6 +36,17 @@ void init_gui(void);
 void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline);
 
 /**
+ * @brief Limpia un rango determinado de páginas y columnas en la pantalla.
+ *
+ * @param min_page   Coordenada minima de la página (límite derecho).
+ * @param max_page   Coordenada máxima de la página (límite izquierdo).
+ * @param min_column Coordenada mínima de la columna (limite superior).
+ * @param max_column Coordenada máxima de la columna (limite inferior).
+ * @pre min_page <= max_column, min_column <= max_column, max_column < 128, max_page < 4.
+*/
+void clean_range(uint8_t min_page, uint8_t max_page, uint8_t min_column, uint8_t max_column);
+
+/**
  * @brief Limpiar posición donde había flecha en el display.
  *
  * @param arrow_data  Los datos globales de la flecha a dibujar.

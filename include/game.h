@@ -7,7 +7,8 @@
 typedef enum {
     MAIN,
     GAME,
-    SCOREBOARD
+    SCOREBOARD,
+    GAME_OVER
 } screen_t;
 
 typedef enum {
@@ -19,6 +20,12 @@ typedef enum {
     REPEAT_SINGLE,
     REPEAT_DOUBLE
 } sequence_mode_t;
+
+/**
+ * @brief Muestra el menú principal.
+ * Cambia estado a MAIN.
+ */
+void main_menu(void);
 
 /**
  * @brief Inicializa los timers y el estado del juego.
@@ -43,7 +50,7 @@ void next_sequence(void);
  */
 void reset_counter(gui_counter_t* counter);
 
-/** TODO: El nombre es porque tiene conflicto con el de timer.h.
+/**
  * @brief Incrementa contador según el valor pasado por parámetro.
  *
  * @param counter El contador a modificar.
@@ -52,5 +59,21 @@ void reset_counter(gui_counter_t* counter);
  * @warning Hay overflow, pasa a cero.
  */
 void increment_counter(gui_counter_t* counter, uint8_t value);
+
+/**
+ * @brief Decrementa contador según el valor pasado por parámetro.
+ *
+ * @param counter El contador a modificar.
+ * @param value   El valor a restar.
+ *r
+ * @warning Hay overflow, pasa a cero.
+ */
+void decrement_counter(gui_counter_t* counter, uint8_t value);
+
+/**
+ * @brief Nuevo tick del juego.
+ * Baja flechas y actualiza juego (secuencia, dificultad, etc.)
+ */
+void game_tick(void);
 
 #endif /* GAME_H */

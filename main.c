@@ -4,7 +4,7 @@
 #include <timer.h>
 #include <timer_hw.h>
 #include <func_queue.h>
-#include <gui.h>
+#include <display.h>
 #include <keyboard.h>
 #include <random.h>
 #include <game.h>
@@ -29,8 +29,13 @@ int main() {
     init_keyboard();
     init_timer_hw();
     init_random(&random_byte);
-    init_gui();
-    init_game();
+    init_display();
+
+    timer_t timer_game_tick;
+    init_timer(&timer_game_tick, 1, game_tick);
+    add_timer(timer_game_tick);
+
+    main_menu();
 
     __enable_interrupt();
 

@@ -37,6 +37,12 @@ gui_counter_t score = {4, score_counter_array};
 gui_counter_t level = {1, level_counter_array};
 gui_counter_t lives_counter = {1, lives_counter_array};
 
+/* Pantalla actual */
+screen_t current_screen = MAIN;
+
+/* Estado pausa. */
+uint8_t paused = 0;
+
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
 
@@ -49,6 +55,11 @@ const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE]
 
 /* Pasos de secuencia para pasar de nivel. */
 const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 10, 15};
+
+/* Velocidades por nivel */
+/* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
+const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 1};
+
 /* Pasos de secuncia actual. */
 uint8_t current_sequence_iteration = 0;
 
@@ -56,10 +67,10 @@ uint8_t current_sequence_iteration = 0;
 uint8_t ticks_next_arrow = 0;
 
 /* Velocidad global */
-uint8_t speed = INIT_SPEED;
+uint8_t speed = 4;
 
 /* Contador para saber si ya se pueden bajar las flechas. */
-uint8_t ticks_lower_arrows = INIT_SPEED;
+uint8_t ticks_lower_arrows = 4;
 
 /* Vidas */
 uint8_t lives = INIT_LIVES;
@@ -111,11 +122,56 @@ global_arrow_data_t* get_arrow_data(arrow_direction_t direction) {
     return res;
 }
 
+void main_menu(void) {
+    current_screen = MAIN;
+    clean_range(0, 3, 0, 127);
+
+    render_chars("ALFOBI", 6, 4, 60);
+    render_chars(":)", 2, 11, 68);
+    render_chars("PRESS #", 7, 2, 76);
+
+    for (uint8_t i = 0; i < 4; i++) {
+        render_arrow(all_global_arrow_data[i], 84, 0);
+    }
+}
+
+/**
+ * @brief Mostrar pantalla de fin del juego.
+ *
+ * @param win Si pasó el último nivel debe valer 1. 0 en caso contrario.
+ */
+void game_over(uint8_t win) {
+    clean_range(0, 3, 58, 80);
+    render_chars("FIN DEL", 7, 3, 61);
+    render_chars("JUEGO", 5, 6, 67);
+
+    if (win)
+        render_chars("GANASTE", 7, 2, 73);
+    else
+        render_chars("PERDISTE", 8, 0, 73);
+
+    current_screen = GAME_OVER;
+}
+
+/**
+ * @brief Alternar pausa y mostrar/ocultar cartel de pausa.
+ */
+void alternate_pause() {
+    paused = !paused;
+    clean_range(0, 3, 58, 68);
+    if (paused)
+        render_chars("PAUSA", 5, 6, 61);
+}
+
 /**
  * @brief Decrementar contador de vidas y actualizar contador en el display.
  */
 void decrement_lives(void) {
-    /** TODO */
+    decrement_counter(&lives_counter, 1);
+    render_chars(lives_counter.digits, 1, 29, 12);
+    if (lives_counter.digits[0] == '0') {
+        game_over(0);
+    }
 }
 
 /**
@@ -185,13 +241,13 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
         }
     }
 
-    /* Si no se encuentra, quiere decir que no había flechas, por lo que la pulsación fue errónea y le sacamos una vida. */
+    /* Si no se encuentra, quiere decir que no había flechas, por lo que la pulsación fue errónea y pierde una vida. */
     if (!lowest_arrow) {
         decrement_lives();
         return;
     }
 
-    /* Si se encuentra, vemos qué tan abajo estaba la flecha. Si estaba lo suficientemente abajo manejamos puntuación, si no, le sacamos una vida por gil. */
+    /* Si se encuentra, vemos qué tan abajo estaba la flecha. Si estaba lo suficientemente abajo manejamos puntuación, si no, pierde una vida. */
     if (lowest_arrow->height <= arrow_data->outline_height - arrow_size) {
         decrement_lives();
     } else {
@@ -212,15 +268,26 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
 void handle_keys(void) {
     keys_t pressed_keys = get_pressed_keys();
 
-    if (pressed_keys.aster) { /* Pause key. */
-        /** TODO: Definir este paused e implementar la pausa. */
-        // paused = !paused;
+    if (pressed_keys.d) { /* Desde todas las pantallas va al menú principal. */
+        main_menu();
+        return;
     }
 
-    /*
+    if (pressed_keys.hash) { /* Desde todas las pantallas reinicia el juego. */
+        init_game();
+        return;
+    }
+
+    if (current_screen != GAME)
+        return;
+
+    if (pressed_keys.aster) { /* Tecla pausa. */
+        alternate_pause();
+        return;
+    }
+
     if (paused)
         return;
-    */
 
     if (pressed_keys.zero) { /* Left arrow. */
         handle_column_keypress(&left_arrow_data);
@@ -239,14 +306,12 @@ void handle_keys(void) {
     }
 }
 
-/**
- * @brief Nuevo tick del juego.
- * Baja flechas y actualiza juego (secuencia, dificultad, etc.)
- */
 void game_tick(void) {
     handle_keys();
-    lower_arrows();
-    next_sequence();
+    if (!paused && current_screen == GAME) {
+        lower_arrows();
+        next_sequence();
+    }
 }
 
 /**
@@ -297,13 +362,13 @@ void next_sequence(void) {
     uint8_t level_number = get_current_level();
 
     if (!current_sequence_iteration && level_number >= MAX_LEVEL) {
-        /** TODO: Fin del juego. */
-        reset_counter(&level);
+        game_over(1);
         return;
     }
 
     if (!current_sequence_iteration) {
         current_sequence_iteration = sequence_iterations_per_level[level_number];
+        speed = speed_per_level[level_number];
         increment_counter(&level, 1);
         render_chars(level_counter_array, 1, 29, 6);
     }
@@ -400,7 +465,41 @@ void increment_counter(gui_counter_t* counter, uint8_t value) {
         reset_counter(counter);
 }
 
+void decrement_counter(gui_counter_t* counter, uint8_t value) {
+
+    for (uint8_t increment = 0; increment < value; increment++) {
+
+        uint8_t carry = 1;
+        for (uint8_t i = counter->digit_amount; i; i--) {
+            uint8_t digit_index = i - 1;
+
+            if (carry) {
+                counter->digits[digit_index]--;
+                carry = 0;
+            }
+
+            if (counter->digits[digit_index] < '0') {
+                counter->digits[digit_index] = '9';
+                carry = 1;
+            }
+
+            if (!carry)
+                break;
+        }
+    }
+
+    /* Overflow. */
+    if (counter->digits[counter->digit_amount - 1] < '0')
+        for (uint8_t i = counter->digit_amount; i; i--) {
+            counter->digits[i - 1] = '9';
+        }
+}
+
 void init_game(void) {
+    current_screen = GAME;
+
+    init_gui();
+
     init_column(&left_arrow_data);
     init_column(&right_arrow_data);
     init_column(&up_arrow_data);
@@ -420,14 +519,11 @@ void init_game(void) {
         render_arrow(all_global_arrow_data[i], all_global_arrow_data[i]->outline_height, 1);
     }
 
+    paused = 0;
     current_sequence_mode = SINGLE;
     current_sequence_iteration = sequence_iterations_per_level[0];
-    speed = INIT_SPEED;
+    speed = speed_per_level[0];
     ticks_next_arrow = 0;
     ticks_lower_arrows = speed;
     lives = INIT_LIVES;
-
-    timer_t timer_lower_arrows;
-    init_timer(&timer_lower_arrows, 1, game_tick);
-    add_timer(timer_lower_arrows);
 }
