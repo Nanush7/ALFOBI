@@ -5,29 +5,19 @@
 
 /**
  * @brief Inicializar módulo de generación de números (pseudo)aleatorios.
- * 
- * @param byte_pointer Puntero a byte utilizado para almacenar número.
  */
-void init_random(uint8_t* byte_pointer);
+void init_random(uint16_t seed);
 
 /**
- * @brief Obtener byte pseudoaleatorio.
- * 
- * @returns El byte pseudoaleatorio.
+ * @brief Generar el siguiente número número pseudoaleatorio.
  */
-uint8_t rand(void);
+void next_rand(void);
 
 /**
- * @brief Obtener un número aleatorio en determinado rango.
- * 
- * @param min Mínimo del rango (incluído).
- * @param max Máximo del rango (incluído).
- * 
- * @returns El número aleatorio generado, perteneciente al rango.
- * 
- * @pre max <= 255.
- * @pre min <= max.
+ * @brief Obtener número pseudoaleatorio.
+ *
+ * @returns El número pseudoaleatorio.
  */
-uint8_t rand_in_range(uint8_t min, uint8_t max);
+uint16_t get_rand(void);
 
 #endif /* RANDOM_H */

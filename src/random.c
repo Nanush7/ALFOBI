@@ -1,22 +1,19 @@
 #include <random.h>
-#include <assert_test.h>
 
-uint8_t* random_byte_ptr = 0;
+uint8_t random_number = 0;
 
-void init_random(uint8_t* byte_pointer) {
-	random_byte_ptr = byte_pointer;
+void init_random(uint16_t seed) {
+	random_number = seed;
 }
 
-uint8_t rand(void) {
-	return *random_byte_ptr;
+void next_rand(void) {
+	random_number = (random_number >> 4) + 89;
+
+	random_number ^= (random_number << 3);
+	random_number ^= (random_number >> 5);
+	random_number ^= (random_number << 1);
 }
 
-uint8_t rand_in_range(uint8_t min, uint8_t max) {
-	ASSERT(min <= max);
-	ASSERT(0); /* No implementado. */
-
-	if (min == max)
-		return min;
-
-	return max;
+uint16_t get_rand(void) {
+	return random_number;
 }

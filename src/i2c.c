@@ -20,12 +20,15 @@ void init_i2c(uint8_t slave_addr) {
     /* Pausamos la USCI. */
     UCB0CTL1 |= UCSWRST;
 
+    /* FIXME: Está raro que esto ande sin poner ningún divisor porque DCO ya debería estar a 4.25MHz. */
     /* Se usa DCO como fuente de SMCLK por defecto */
     /* Configuramos DCO con una frecuencia típica de 0.30MHz */
     /* DCO = 3, RSEL = 3, MOD = 0 */
     /* BCSCTL1 |= RSEL1 | RSEL2; */
     /** TODO: Ver si podemos usar más de 100kHz. Tendríamos que cambiar la config del display también.
     DCOCTL  |= DCO1  | DCO2; */
+
+    // UCB0BR0 = 11; /* Así se setearía un divisor de 11. */
 
     /* Configuramos la USCI_B: */
     /* Modo master + modo I2C + comunicación sincronizada. */

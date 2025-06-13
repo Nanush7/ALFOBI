@@ -48,9 +48,9 @@ sequence_mode_t current_sequence_mode = NONE;
 
 /* Arreglos probabilísticos de selección de estados, por nivel. */
 const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE] = {
-    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, SINGLE, SINGLE, NONE},
-    {SINGLE, SINGLE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, SINGLE, NONE},
-    {SINGLE, SINGLE, SINGLE, SINGLE, SINGLE, SINGLE, NONE, SINGLE, SINGLE, SINGLE},
+    {DOUBLE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, NONE, NONE},
+    {QUAD, QUAD, TRIPLE, TRIPLE, TRIPLE, DOUBLE, SINGLE, NONE, NONE},
+    {QUAD, QUAD, QUAD, QUAD, QUAD, QUAD, NONE, SINGLE, SINGLE, SINGLE},
 };
 
 /* Pasos de secuencia para pasar de nivel. */
@@ -58,7 +58,7 @@ const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 10, 15};
 
 /* Velocidades por nivel */
 /* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
-const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 1};
+const uint8_t speed_per_level[MAX_LEVEL] = {1, 2, 3}; /** TODO: acá van al revés, al principio menos y después más. Se cambió para más facilidad de testeo. */
 
 /* Pasos de secuncia actual. */
 uint8_t current_sequence_iteration = 0;
@@ -78,7 +78,6 @@ uint8_t lives = INIT_LIVES;
 /*=============================*/
 /* Fin estado global del juego */
 /*=============================*/
-
 
 /**
  * @brief Obtener número de nivel almacenado en el contador de niveles.
@@ -181,6 +180,9 @@ void decrement_lives(void) {
  */
 void lower_column_arrows(global_arrow_data_t* column) {
     for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
+        if (current_screen != GAME)
+            return;
+
         arrow_t* arrow_ptr = &column->arrows[i];
 
         if (!arrow_ptr->active)
@@ -204,6 +206,8 @@ void lower_arrows(void) {
     }
 
     for (uint8_t i = 0; i < 4; i++) {
+        if (current_screen != GAME)
+            return;
         lower_column_arrows(all_global_arrow_data[i]);
     }
 
@@ -258,8 +262,10 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
         render_chars(score.digits, 4, 17, 0);
     }
 
-    lowest_arrow->active = 0;
-    clean_arrow(arrow_data, lowest_arrow->height);
+    if (current_screen == GAME) {
+        lowest_arrow->active = 0;
+        clean_arrow(arrow_data, lowest_arrow->height);
+    }
 }
 
 /**
@@ -335,23 +341,64 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
 }
 
 /**
- * @brief Generar siguiente paso de la secuencia con una sola flecha.
- * 
- * @returns Los datos globales de la flecha generada o NULL si no hay columnas disponibles.
- */
-global_arrow_data_t* generate_sequence_single(void) {
-    return all_global_arrow_data[rand() & 0b11];
-}
-
-/**
  * @brief Sortear y setear el siguiente estado del juego según el nivel.
  */
 void next_game_state(void) {
-    uint8_t rand_int = rand() & 0x0F;
+    uint8_t rand_int = get_rand() & 0x0F;
     if (rand_int >= PROBABILITY_ARRAY_SIZE)
         rand_int -= PROBABILITY_ARRAY_SIZE;
 
     current_sequence_mode = state_probability_array[get_current_level()-1][rand_int];
+}
+
+/**
+ * @brief Generar siguiente paso de la secuencia con una determinada cantidad de flechas al mismo tiempo en la misma altura. Dibuja las flechas generadas.
+ * Usa el modo de generación de secuencias global.
+ */
+void generate_arrows() {
+    uint8_t column_number, column_number2;
+
+    column_number = get_rand() & 0b11;
+
+    switch (current_sequence_mode) {
+        case SINGLE:
+            // Mandamos la flecha por la columna seleccionada.
+            add_new_arrow(all_global_arrow_data[column_number]);
+            break;
+        case DOUBLE:
+            // Sorteamos una columna que no sea la ya sorteada.
+            next_rand();
+            column_number2 = get_rand() & 0b11;
+            if (column_number == column_number2) {
+                column_number2 = (column_number + 1) & 0b11;
+            }
+            ASSERT(column_number != column_number2);
+            add_new_arrow(all_global_arrow_data[column_number]);
+            add_new_arrow(all_global_arrow_data[column_number2]);
+            // Mandamos 2 flechas, cada una por la columna sorteada.
+            break;
+        case TRIPLE:
+            // Mandamos una flecha por cada columna, excepto por la que se sorteó.
+            for (uint8_t column = 0; column < 4; column++) {
+                if (column == column_number)
+                    continue;
+                add_new_arrow(all_global_arrow_data[column_number]);
+            }
+            break;
+        case QUAD:
+            for (uint8_t column = 0; column < 3; column++) {
+                add_new_arrow(all_global_arrow_data[column]);
+            }
+            break;
+        case NONE: /* NONE */
+            next_game_state();
+            return;
+    }
+
+    --current_sequence_iteration;
+    next_game_state();
+
+    return;
 }
 
 void next_sequence(void) {
@@ -361,6 +408,7 @@ void next_sequence(void) {
     /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
     uint8_t level_number = get_current_level();
 
+    /** TODO: el juego debería terminar cuando se presiona la última flecha, no cuando se genera. */
     if (!current_sequence_iteration && level_number >= MAX_LEVEL) {
         game_over(1);
         return;
@@ -373,25 +421,11 @@ void next_sequence(void) {
         render_chars(level_counter_array, 1, 29, 6);
     }
 
-    global_arrow_data_t* next_arrow = 0;
-    switch(current_sequence_mode) {
-        case SINGLE:
-            next_arrow = generate_sequence_single();
-            break;
-        default:  /* NONE. */
-            break;
-    }
-
     /* La proxima flecha puede aparecer después de que la anterior bajó lo suficiente. */
     /* LEFT_RIGHT_ARROW_SIZE porque es el más grande entre los dos tamaños de flechas. */
     ticks_next_arrow = LEFT_RIGHT_ARROW_SIZE + VERTICAL_ARROW_SPACING;
 
-    if (next_arrow) {
-        --current_sequence_iteration;
-        add_new_arrow(next_arrow);
-    } else if (current_sequence_mode == NONE) {
-        next_game_state(); /** TODO: No queremos hacer esto todas las veces. ¿Ponemos un contador? */
-    }
+    generate_arrows();
 }
 
 /**

@@ -16,9 +16,7 @@ typedef enum {
     SINGLE,
     DOUBLE,
     TRIPLE,
-    QUAD,
-    REPEAT_SINGLE,
-    REPEAT_DOUBLE
+    QUAD
 } sequence_mode_t;
 
 /**
