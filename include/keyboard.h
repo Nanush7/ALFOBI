@@ -3,8 +3,8 @@
  * @brief Configuracion y procesamiento del teclado.
  */
 
-#ifndef KEYBOARD_H_
-#define KEYBOARD_H_
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #include <stdint.h>
 
@@ -28,8 +28,8 @@ typedef struct {
 } keys_t;
 
 /** TODO: Acomodar Doxygen.
- * @brief Se configura el teclado para la correcta recepcion de botones.
- * @paragraph Se establecen los pines correspondientes a las columnas como output y a los de las filas como input con resistencia de pull up. Se habilitan las interrupciones de estas �ltimas.
+ * @brief Se configura el teclado para la correcta recepción de botones.
+ * Se establecen los pines correspondientes a las columnas como output y a los de las filas como input con resistencia de pull up. Se habilitan las interrupciones de estas últimas.
  */
 
 void init_keyboard(void);

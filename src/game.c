@@ -1,9 +1,9 @@
 #include <game.h>
 #include <game_data.h>
-#include <random.h>
 #include <keyboard.h>
 #include <assert_test.h>
-#include <timer.h>
+#include <stdlib.h>
+#include <string_utils.h>
 
 /*=========================*/
 /* Estado global del juego */
@@ -33,8 +33,8 @@ global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_
 uint8_t score_counter_array[4];
 uint8_t level_counter_array[1];
 uint8_t lives_counter_array[1];
-gui_counter_t score = {4, score_counter_array};
-gui_counter_t level = {1, level_counter_array};
+gui_counter_t score         = {4, score_counter_array};
+gui_counter_t level         = {1, level_counter_array};
 gui_counter_t lives_counter = {1, lives_counter_array};
 
 /* Pantalla actual */
@@ -42,26 +42,31 @@ screen_t current_screen = MAIN;
 
 /* Estado pausa. */
 uint8_t paused = 0;
-uint8_t debug = 0;
+uint8_t debug  = 1; /** TODO: cambiar el valor inicial a 0. */
 
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
 
 /* Arreglos probabilísticos de selección de estados, por nivel. */
 const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE] = {
-    {DOUBLE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, NONE, NONE},
-    {QUAD, QUAD, TRIPLE, TRIPLE, TRIPLE, DOUBLE, SINGLE, NONE, NONE},
-    {QUAD, QUAD, QUAD, QUAD, QUAD, QUAD, NONE, SINGLE, SINGLE, SINGLE},
+    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE},
+    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE},
+    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE},
+    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE},
+    {TRIPLE, SINGLE, SINGLE, NONE, DOUBLE, TRIPLE, NONE, SINGLE},
+    {TRIPLE, SINGLE, SINGLE, NONE, DOUBLE, TRIPLE, NONE, SINGLE},
+    {TRIPLE, SINGLE, QUAD, SINGLE, DOUBLE, DOUBLE, TRIPLE, QUAD},
+    {TRIPLE, SINGLE, QUAD, SINGLE, DOUBLE, DOUBLE, TRIPLE, QUAD}
 };
 
 /* Pasos de secuencia para pasar de nivel. */
-const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 10, 15};
+const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 6, 6, 8, 8, 10, 10, 10};
 
 /* Velocidades por nivel */
 /* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
-const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 1}; /** TODO: acá van al revés, al principio menos y después más. Se cambió para más facilidad de testeo. */
+const uint8_t speed_per_level[MAX_LEVEL] = {4, 4, 4, 4, 4, 4, 4, 4};
 
-/* Pasos de secuncia actual. */
+/* Pasos de secuencia actual. */
 uint8_t current_sequence_iteration = 0;
 
 /* Contador para saber cuándo se pueden introducir nuevas flechas. */
@@ -77,8 +82,11 @@ uint8_t ticks_lower_arrows = 4;
 uint8_t lives = INIT_LIVES;
 
 /* Scoreboard. */
-uint16_t scores[SCORE_ARRAY_LEN];
+uint16_t scores[SCORE_ARRAY_LENGTH];
 uint8_t scores_tail = 0;
+
+/* Flag que indica si en el tick actual ya se perdieron vidas. */
+uint8_t lost_lives = 0;
 
 /*=============================*/
 /* Fin estado global del juego */
@@ -86,10 +94,10 @@ uint8_t scores_tail = 0;
 
 /**
  * @brief Obtener número de nivel almacenado en el contador de niveles.
- * Convertido de caradcter a entero sin signo.
+ * Convertido de caracter a entero sin signo.
+ * Se usa en lugar de atoi porque no usa multiplicaciones.
  *
  * @returns El número de nivel actual, como entero.
- *
  * @pre level es un contador de un solo dígito.
  */
 uint8_t get_current_level(void) {
@@ -140,11 +148,42 @@ void main_menu(void) {
 }
 
 /**
+ * @brief Agregar puntaje actual al scoreboard.
+ * Se inserta ordenado y se reemplaza el peor resultado si no hay espacio.
+ */
+void add_to_scoreboard(uint16_t score_to_add) {
+
+    /* Si la tabla está llena y el score es peor que el último, no se agrega. */
+    if (scores_tail == SCORE_ARRAY_LENGTH && scores[scores_tail - 1] > score_to_add)
+        return;
+
+    /* Si hay lugar para una entrada nueva, la usamos. Si no, sobrescribimos el último. */
+    /* Tail es la posición de la nueva última flecha. */
+    uint8_t tail = scores_tail < SCORE_ARRAY_LENGTH ? scores_tail : scores_tail - 1;
+
+    scores[tail] = score_to_add;
+
+    for (uint8_t i = tail; i; i--) {
+        if (scores[i] <= scores[i-1])
+            break;
+
+        uint16_t aux = scores[i];
+        scores[i]    = scores[i-1];
+        scores[i-1]  = aux;
+    }
+
+    if (scores_tail < SCORE_ARRAY_LENGTH) {
+        scores_tail++;
+    }
+}
+
+/**
  * @brief Mostrar pantalla de fin del juego.
  *
  * @param win Si pasó el último nivel debe valer 1. 0 en caso contrario.
  */
 void game_over(uint8_t win) {
+    current_screen = GAME_OVER;
     clean_range(0, 3, 58, 80);
     render_chars("FIN DEL", 7, 3, 61);
     render_chars("JUEGO", 5, 6, 67);
@@ -154,80 +193,40 @@ void game_over(uint8_t win) {
     else
         render_chars("PERDISTE", 8, 0, 73);
 
-    current_screen = GAME_OVER;
-}
-
-/**
- * @brief Convertir string de digitos a número entero sin signo (ASCII to integer).
- *
- * @param str El arreglo de caracteres que contiene los dígitos.
- * @returns El entero de 16 bits correspondiente.
- * @pre str solo contiene caracteres entre '0' y '9'.
- */
-uint16_t atoi(uint8_t* str, uint8_t digit_amount) {
-    uint16_t res = 0;
-
-    for (uint8_t i = 0; i < digit_amount; i++) {
-        res *= 10;
-        res += str[i] - '0';
-    }
-
-    return res;
-}
-
-/**
- * @brief Agregar puntaje actual al scoreboard.
- * Se inserta ordenado y se reemplaza el peor resultado si no hay espacio.
- */
-void add_to_scoreboard(uint16_t score_to_add) {
-    scores[scores_tail] = score_to_add;
-    /* TODO: terminar. */
-
-}
-
-/**
- * @brief Convertir entero a un arreglo de caracteres.
- *
- * @param value        El entero a convertir.
- * @param str_buff     Puntero al arreglo donde guardar el resultado.
- * @param digit_amount Cantidad de dígitos del número.
- * @pre El tamaño del arreglo debe ser mayor o igual a digit_amount.
- */
-void itoa(uint16_t value, uint8_t* str_buff, uint8_t digit_amount) {
-    /* Usamos módulo ya que esta función no se ejecuta en contextos críticos en el tiempo. */
-    uint8_t i = 1;
-    do {
-        str_buff[digit_amount - i] = '0' + (value % 10);
-        i++;
-    } while (value /= 10);
+    add_to_scoreboard(alfobi_atoi(score.digits, score.digit_amount));
 }
 
 /**
  * @brief Mostrar pantalla del scoreboard.
  */
-void show_scoreboard() {
+void show_scoreboard(void) {
+    current_screen = SCOREBOARD;
     clean_range(0, 3, 0, 127);
     render_chars("TOP", 3, 9, 13);
     render_chars("SCORES", 6, 3, 19);
-    current_screen = SCOREBOARD;
 
-    // posición del primer score: 4, 30
-    // separación entre scores: 5
+    if (!scores_tail) {
+        render_chars("404", 3, 10, 30);
+        render_chars("NOT", 3, 10, 37);
+        render_chars("FOUND", 5, 6, 44);
+        return;
+    }
 
     uint8_t score_entry_height = 30;
     for (uint8_t i = 0; i < scores_tail; i++) {
-        // Renderizar el score scores[i]
-        uint8_t score_index_str = '0' + i;
-        uint8_t score_str[5]
-        render_chars(&score_index_str, 1, 4, score_entry_height);
-        score_entry_height += 5;
+        uint8_t score_str[4];
+        alfobi_itoa(scores[i], score_str, 4);
+        uint8_t index_str[2] = {'1' + i , '-'};
+        render_chars(index_str, 1, 4, score_entry_height);
+        render_chars(score_str, 4, 15, score_entry_height);
+        score_entry_height += 10;
     }
 }
 
 /**
  * @brief Alternar pausa y mostrar/ocultar cartel de pausa.
  */
-void alternate_pause() {
+void alternate_pause(void) {
     paused = !paused;
     clean_range(0, 3, 58, 68);
     if (paused)
@@ -238,7 +237,7 @@ void alternate_pause() {
  * @brief Decrementar contador de vidas y actualizar contador en el display.
  */
 void decrement_lives(void) {
-    if (debug && DEBUG) return;
+    if (debug) return;
     decrement_counter(&lives_counter, 1);
     render_chars(lives_counter.digits, 1, 29, 12);
     if (lives_counter.digits[0] == '0') {
@@ -266,7 +265,10 @@ void lower_column_arrows(global_arrow_data_t* column) {
         arrow_ptr->height++;
         if (arrow_ptr->height > 127) { /** TODO: pasar a constante. */
             arrow_ptr->active = 0;
-            decrement_lives();
+            if (!lost_lives) {
+                lost_lives = 1;
+                decrement_lives();
+            }
         } else {
             render_arrow(column, arrow_ptr->height, 0);
         }
@@ -348,6 +350,10 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
 void handle_keys(void) {
     keys_t pressed_keys = get_pressed_keys();
 
+    if (!*(uint16_t*)&pressed_keys) {
+        return;
+    }
+
     if (pressed_keys.a) { /* Desde todas las pantallas va al menú principal. */
         main_menu();
         return;
@@ -398,7 +404,9 @@ void handle_keys(void) {
 void game_tick(void) {
     handle_keys();
     if (!paused && current_screen == GAME) {
+        lost_lives = 0;
         lower_arrows();
+        /** TODO: lost_lives = 0; */
         next_sequence();
     }
 }
@@ -427,7 +435,7 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
  * @brief Sortear y setear el siguiente estado del juego según el nivel.
  */
 void next_game_state(void) {
-    uint8_t rand_int = get_rand() & 0x0F;
+    uint8_t rand_int = rand() & 0x0F;
     if (rand_int >= PROBABILITY_ARRAY_SIZE)
         rand_int -= PROBABILITY_ARRAY_SIZE;
 
@@ -441,39 +449,39 @@ void next_game_state(void) {
 void generate_arrows() {
     uint8_t column_number, column_number2;
 
-    column_number = get_rand() & 0b11;
+    column_number = rand() & 0b11;
 
     switch (current_sequence_mode) {
-        case SINGLE:
-            // Mandamos la flecha por la columna seleccionada.
-            add_new_arrow(all_global_arrow_data[column_number]);
-            break;
-        case DOUBLE:
-            // Sorteamos una columna que no sea la ya sorteada.
-            column_number2 = get_rand() & 0b11;
-            if (column_number == column_number2) {
-                column_number2 = (column_number + 1) & 0b11;
-            }
-            add_new_arrow(all_global_arrow_data[column_number]);
-            add_new_arrow(all_global_arrow_data[column_number2]);
-            // Mandamos 2 flechas, cada una por la columna sorteada.
-            break;
-        case TRIPLE:
-            // Mandamos una flecha por cada columna, excepto por la que se sorteó.
-            for (uint8_t column = 0; column < 4; column++) {
-                if (column != column_number) {
-                    add_new_arrow(all_global_arrow_data[column]);
-                }
-            }
-            break;
-        case QUAD:
-            for (uint8_t column = 0; column < 3; column++) {
+    case SINGLE:
+        // Mandamos la flecha por la columna seleccionada.
+        add_new_arrow(all_global_arrow_data[column_number]);
+        break;
+    case DOUBLE:
+        // Sorteamos una columna que no sea la ya sorteada.
+        column_number2 = rand() & 0b11;
+        if (column_number == column_number2) {
+            column_number2 = (column_number + 1) & 0b11;
+        }
+        add_new_arrow(all_global_arrow_data[column_number]);
+        add_new_arrow(all_global_arrow_data[column_number2]);
+        // Mandamos 2 flechas, cada una por la columna sorteada.
+        break;
+    case TRIPLE:
+        // Mandamos una flecha por cada columna, excepto por la que se sorteó.
+        for (uint8_t column = 0; column < 4; column++) {
+            if (column != column_number) {
                 add_new_arrow(all_global_arrow_data[column]);
             }
-            break;
-        case NONE: /* NONE */
-            next_game_state();
-            return;
+        }
+        break;
+    case QUAD:
+        for (uint8_t column = 0; column < 3; column++) {
+            add_new_arrow(all_global_arrow_data[column]);
+        }
+        break;
+    case NONE: /* NONE */
+        next_game_state();
+        return;
     }
 
     --current_sequence_iteration;
@@ -555,22 +563,16 @@ void increment_counter(gui_counter_t* counter, uint8_t value) {
     
     for (uint8_t increment = 0; increment < value; increment++) {
         
-        uint8_t carry = 1;
         for (uint8_t i = counter->digit_amount; i; i--) {
             uint8_t digit_index = i - 1;
-            
-            if (carry) {
-                counter->digits[digit_index]++;
-                carry = 0;
-            }
-            
+
+            counter->digits[digit_index]++;
+
             if (counter->digits[digit_index] > '9') {
                 counter->digits[digit_index] = '0';
-                carry = 1;
+            } else {
+                break;
             }
-            
-            if (!carry)
-            break;
         }
     }
     
@@ -583,22 +585,16 @@ void decrement_counter(gui_counter_t* counter, uint8_t value) {
 
     for (uint8_t increment = 0; increment < value; increment++) {
 
-        uint8_t carry = 1;
         for (uint8_t i = counter->digit_amount; i; i--) {
             uint8_t digit_index = i - 1;
 
-            if (carry) {
-                counter->digits[digit_index]--;
-                carry = 0;
-            }
+            counter->digits[digit_index]--;
 
             if (counter->digits[digit_index] < '0') {
                 counter->digits[digit_index] = '9';
-                carry = 1;
-            }
-
-            if (!carry)
+            } else {
                 break;
+            }
         }
     }
 
@@ -640,4 +636,5 @@ void init_game(void) {
     ticks_next_arrow = 0;
     ticks_lower_arrows = speed;
     lives = INIT_LIVES;
+    lost_lives = 0;
 }

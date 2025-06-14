@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <func_queue.h>
 
-#define MS_BETWEEN_TIMER_INTERRUPTS 40
+#define MS_BETWEEN_TIMER_INTERRUPTS 20
 
 /**
  * @struct timer_t

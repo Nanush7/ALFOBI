@@ -4,12 +4,12 @@
 #include <stdint.h>
 
 /* Juego */
-#define INIT_LIVES                 3
-#define VERTICAL_ARROW_SPACING     7 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
-#define MAX_ARROW_COUNT_PER_COLUMN 6
-#define PROBABILITY_ARRAY_SIZE     10
-#define MAX_LEVEL                  3
-#define SCORE_ARRAY_LEN            10
+#define INIT_LIVES                       3
+#define VERTICAL_ARROW_SPACING           7 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
+#define MAX_ARROW_COUNT_PER_COLUMN       6
+#define PROBABILITY_ARRAY_SIZE           8
+#define MAX_LEVEL                        8
+#define SCORE_ARRAY_LENGTH               9 /* Si se aumenta por encima de 9, hace falta cambiar la lógica. */
 
 /* GUI */
 #define LEFT_OUTLINE_HEIGHT              120
@@ -20,8 +20,8 @@
 #define STARTING_ARROW_HEIGHT_LEFT_RIGHT 17
 #define MAX_SCORE_FOR_ARROW              10
 
-#define LEFT_RIGHT_ARROW_SIZE 7
-#define UP_DOWN_ARROW_SIZE    4
+#define LEFT_RIGHT_ARROW_SIZE            7
+#define UP_DOWN_ARROW_SIZE               4
 
 extern const uint8_t template_left[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_right[LEFT_RIGHT_ARROW_SIZE];

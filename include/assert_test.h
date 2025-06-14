@@ -9,6 +9,7 @@
 #define ASSERT(expr){\
     if (!(expr)){\
         P1OUT |= BIT0;\
+        __disable_interrupt();\
         while(1){};\
     }\
 }
