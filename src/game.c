@@ -42,6 +42,7 @@ screen_t current_screen = MAIN;
 
 /* Estado pausa. */
 uint8_t paused = 0;
+uint8_t debug = 0;
 
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
@@ -58,7 +59,7 @@ const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 10, 15};
 
 /* Velocidades por nivel */
 /* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
-const uint8_t speed_per_level[MAX_LEVEL] = {1, 2, 3}; /** TODO: acá van al revés, al principio menos y después más. Se cambió para más facilidad de testeo. */
+const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 1}; /** TODO: acá van al revés, al principio menos y después más. Se cambió para más facilidad de testeo. */
 
 /* Pasos de secuncia actual. */
 uint8_t current_sequence_iteration = 0;
@@ -74,6 +75,10 @@ uint8_t ticks_lower_arrows = 4;
 
 /* Vidas */
 uint8_t lives = INIT_LIVES;
+
+/* Scoreboard. */
+uint16_t scores[SCORE_ARRAY_LEN];
+uint8_t scores_tail = 0;
 
 /*=============================*/
 /* Fin estado global del juego */
@@ -153,6 +158,73 @@ void game_over(uint8_t win) {
 }
 
 /**
+ * @brief Convertir string de digitos a número entero sin signo (ASCII to integer).
+ *
+ * @param str El arreglo de caracteres que contiene los dígitos.
+ * @returns El entero de 16 bits correspondiente.
+ * @pre str solo contiene caracteres entre '0' y '9'.
+ */
+uint16_t atoi(uint8_t* str, uint8_t digit_amount) {
+    uint16_t res = 0;
+
+    for (uint8_t i = 0; i < digit_amount; i++) {
+        res *= 10;
+        res += str[i] - '0';
+    }
+
+    return res;
+}
+
+/**
+ * @brief Agregar puntaje actual al scoreboard.
+ * Se inserta ordenado y se reemplaza el peor resultado si no hay espacio.
+ */
+void add_to_scoreboard(uint16_t score_to_add) {
+    scores[scores_tail] = score_to_add;
+    /* TODO: terminar. */
+
+}
+
+/**
+ * @brief Convertir entero a un arreglo de caracteres.
+ *
+ * @param value        El entero a convertir.
+ * @param str_buff     Puntero al arreglo donde guardar el resultado.
+ * @param digit_amount Cantidad de dígitos del número.
+ * @pre El tamaño del arreglo debe ser mayor o igual a digit_amount.
+ */
+void itoa(uint16_t value, uint8_t* str_buff, uint8_t digit_amount) {
+    /* Usamos módulo ya que esta función no se ejecuta en contextos críticos en el tiempo. */
+    uint8_t i = 1;
+    do {
+        str_buff[digit_amount - i] = '0' + (value % 10);
+        i++;
+    } while (value /= 10);
+}
+
+/**
+ * @brief Mostrar pantalla del scoreboard.
+ */
+void show_scoreboard() {
+    clean_range(0, 3, 0, 127);
+    render_chars("TOP", 3, 9, 13);
+    render_chars("SCORES", 6, 3, 19);
+    current_screen = SCOREBOARD;
+
+    // posición del primer score: 4, 30
+    // separación entre scores: 5
+
+    uint8_t score_entry_height = 30;
+    for (uint8_t i = 0; i < scores_tail; i++) {
+        // Renderizar el score scores[i]
+        uint8_t score_index_str = '0' + i;
+        uint8_t score_str[5]
+        render_chars(&score_index_str, 1, 4, score_entry_height);
+        score_entry_height += 5;
+    }
+}
+
+/**
  * @brief Alternar pausa y mostrar/ocultar cartel de pausa.
  */
 void alternate_pause() {
@@ -166,6 +238,7 @@ void alternate_pause() {
  * @brief Decrementar contador de vidas y actualizar contador en el display.
  */
 void decrement_lives(void) {
+    if (debug && DEBUG) return;
     decrement_counter(&lives_counter, 1);
     render_chars(lives_counter.digits, 1, 29, 12);
     if (lives_counter.digits[0] == '0') {
@@ -180,8 +253,9 @@ void decrement_lives(void) {
  */
 void lower_column_arrows(global_arrow_data_t* column) {
     for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
-        if (current_screen != GAME)
+        if (current_screen != GAME) {
             return;
+        }
 
         arrow_t* arrow_ptr = &column->arrows[i];
 
@@ -274,8 +348,13 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
 void handle_keys(void) {
     keys_t pressed_keys = get_pressed_keys();
 
-    if (pressed_keys.d) { /* Desde todas las pantallas va al menú principal. */
+    if (pressed_keys.a) { /* Desde todas las pantallas va al menú principal. */
         main_menu();
+        return;
+    }
+
+    if (pressed_keys.b) {
+        show_scoreboard();
         return;
     }
 
@@ -294,6 +373,10 @@ void handle_keys(void) {
 
     if (paused)
         return;
+
+    if (pressed_keys.d) {
+        debug = !debug;
+    }
 
     if (pressed_keys.zero) { /* Left arrow. */
         handle_column_keypress(&left_arrow_data);
@@ -367,12 +450,10 @@ void generate_arrows() {
             break;
         case DOUBLE:
             // Sorteamos una columna que no sea la ya sorteada.
-            next_rand();
             column_number2 = get_rand() & 0b11;
             if (column_number == column_number2) {
                 column_number2 = (column_number + 1) & 0b11;
             }
-            ASSERT(column_number != column_number2);
             add_new_arrow(all_global_arrow_data[column_number]);
             add_new_arrow(all_global_arrow_data[column_number2]);
             // Mandamos 2 flechas, cada una por la columna sorteada.
@@ -380,9 +461,9 @@ void generate_arrows() {
         case TRIPLE:
             // Mandamos una flecha por cada columna, excepto por la que se sorteó.
             for (uint8_t column = 0; column < 4; column++) {
-                if (column == column_number)
-                    continue;
-                add_new_arrow(all_global_arrow_data[column_number]);
+                if (column != column_number) {
+                    add_new_arrow(all_global_arrow_data[column]);
+                }
             }
             break;
         case QUAD:
@@ -397,8 +478,6 @@ void generate_arrows() {
 
     --current_sequence_iteration;
     next_game_state();
-
-    return;
 }
 
 void next_sequence(void) {
@@ -417,6 +496,7 @@ void next_sequence(void) {
     if (!current_sequence_iteration) {
         current_sequence_iteration = sequence_iterations_per_level[level_number];
         speed = speed_per_level[level_number];
+        ticks_lower_arrows = speed;
         increment_counter(&level, 1);
         render_chars(level_counter_array, 1, 29, 6);
     }

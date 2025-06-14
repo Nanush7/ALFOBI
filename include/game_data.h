@@ -9,6 +9,7 @@
 #define MAX_ARROW_COUNT_PER_COLUMN 6
 #define PROBABILITY_ARRAY_SIZE     10
 #define MAX_LEVEL                  3
+#define SCORE_ARRAY_LEN            10
 
 /* GUI */
 #define LEFT_OUTLINE_HEIGHT              120

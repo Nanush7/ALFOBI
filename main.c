@@ -1,4 +1,5 @@
 #include <msp430.h>
+#include <stdlib.h>
 #include "intrinsics.h"
 #include "i2c.h"
 #include <timer.h>
@@ -6,7 +7,6 @@
 #include <func_queue.h>
 #include <display.h>
 #include <keyboard.h>
-#include <random.h>
 #include <game.h>
 
 
@@ -16,7 +16,7 @@ int main() {
 
     /* Le subimos la velocidad al DCO (usado por MCLK). */
     BCSCTL1 &= ~RSEL2;
-    BCSCTL1 |= RSEL3 | RSEL1 | RSEL0;
+    BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
 
     /* LED assert. */
     P1DIR |= BIT0;
@@ -26,8 +26,9 @@ int main() {
     init_i2c(0x3C);
     init_keyboard();
     init_timer_hw();
-    init_random(0xCAFE);
     init_display();
+
+    srand(17);
 
     timer_t timer_game_tick;
     init_timer(&timer_game_tick, 1, game_tick);
