@@ -11,19 +11,19 @@
 
 /* Datos globales de flechas. */
 global_arrow_data_t left_arrow_data = {
-    RIGHT, LEFT_RIGHT_ARROW_SIZE, {}, RIGHT_OUTLINE_HEIGHT, 0, STARTING_ARROW_HEIGHT_LEFT_RIGHT
+    RIGHT, LEFT_RIGHT_ARROW_SIZE, RIGHT_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_LEFT_RIGHT, {}
 };
 
 global_arrow_data_t down_arrow_data = {
-    DOWN, UP_DOWN_ARROW_SIZE, {}, DOWN_OUTLINE_HEIGHT, 1, STARTING_ARROW_HEIGHT_UP_DOWN
+    DOWN, UP_DOWN_ARROW_SIZE, DOWN_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_UP_DOWN, {}
 };
 
 global_arrow_data_t up_arrow_data = {
-    UP, UP_DOWN_ARROW_SIZE, {}, UP_OUTLINE_HEIGHT, 2, STARTING_ARROW_HEIGHT_UP_DOWN
+    UP, UP_DOWN_ARROW_SIZE, UP_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_UP_DOWN, {}
 };
 
 global_arrow_data_t right_arrow_data = {
-    LEFT, LEFT_RIGHT_ARROW_SIZE, {}, LEFT_OUTLINE_HEIGHT, 3, STARTING_ARROW_HEIGHT_LEFT_RIGHT
+    LEFT, LEFT_RIGHT_ARROW_SIZE, LEFT_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_LEFT_RIGHT, {}
 };
 
 /* Juntamos todos los datos en un array para simplificar algoritmos. */
@@ -42,7 +42,7 @@ screen_t current_screen = MAIN;
 
 /* Estado pausa. */
 uint8_t paused = 0;
-uint8_t debug  = 1; /** TODO: cambiar el valor inicial a 0. */
+uint8_t debug  = 0;
 
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
@@ -272,7 +272,7 @@ uint8_t lower_column_arrows(global_arrow_data_t* column) {
 
         clean_arrow(column, arrow_ptr->height);
         arrow_ptr->height++;
-        if (arrow_ptr->height > 127) { /** TODO: pasar a constante. */
+        if (arrow_ptr->height > 127) {
             arrow_ptr->active = 0;
             if (!lost_lives) {
                 lost_lives = 1;
@@ -542,32 +542,9 @@ void next_sequence(void) {
  */
 void init_column(global_arrow_data_t* column_data) {
     for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
-        arrow_t* arrow = &column_data->arrows[i];
+        arrow_t* arrow   = &column_data->arrows[i];
         arrow->active    = 0;
-        // arrow->height    = column_data->starting_arrow_height;
-        arrow->direction = column_data->arrow_direction;
-    }
-
-    switch (column_data->arrow_direction) {
-        case RIGHT:
-            column_data->page = 0;
-            column_data->outline_height = RIGHT_OUTLINE_HEIGHT;
-            break;
-        case DOWN:
-            column_data->page = 1;
-            column_data->outline_height = DOWN_OUTLINE_HEIGHT;
-            break;
-        case UP:
-            column_data->page = 2;
-            column_data->outline_height = UP_OUTLINE_HEIGHT;
-            break;
-        case LEFT:
-            column_data->page = 3;
-            column_data->outline_height = LEFT_OUTLINE_HEIGHT;
-            break;
-        default:
-            ASSERT(0);
-            break;
+        arrow->height    = column_data->starting_arrow_height;
     }
 }
 

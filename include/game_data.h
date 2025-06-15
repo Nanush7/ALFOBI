@@ -41,18 +41,16 @@ typedef enum {
 } arrow_direction_t;
 
 typedef struct {
-    arrow_direction_t direction; /** TODO: Esto puede no ser necesario ya que guardamos todas las flechas con misma dirección en un mismo arreglo. */
     uint8_t height; 
     uint8_t active;
 } arrow_t;
 
 typedef struct {
     const arrow_direction_t arrow_direction;
-    const uint8_t template_size; /** Este se puede deducir a partir de la dirección */
+    const uint8_t template_size;
+    const uint8_t outline_height;
+    const uint8_t starting_arrow_height;
     arrow_t arrows[MAX_ARROW_COUNT_PER_COLUMN];
-    uint8_t outline_height; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
-    uint8_t page; /** TODO: en caso de no modificar esto en tiempo de ejecución, sacar este campo. */
-    uint8_t starting_arrow_height; /** Este se puede deducir a partir de la dirección */
 } global_arrow_data_t;
 
 typedef struct {

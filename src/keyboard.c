@@ -104,6 +104,5 @@ void handle_keypress(void) {
 __interrupt void teclado_isr(void) {
     /* No queremos que interrumpa más de una vez mientras se espera por el rebote. */
     disable_interrupt_gpio();
-    // P2IFG &= ~ROWS;
     enable_timer_A1();
 }

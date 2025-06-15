@@ -18,7 +18,7 @@ void add_timer(timer_t timer) {
 
 void init_timer(timer_t* timer, uint8_t target, func* callback) {
     timer->target   = target;
-    timer->counter  = 0;
+    timer->counter  = target;
     timer->callback = callback;
 }
 
@@ -26,9 +26,8 @@ void increment_counters(void) {
     timer_t* timer = timers;
     for (uint8_t i = timers_tail; i; i--) {
 
-        /** TODO: Esto se podría invertir, setear en target y restar hasta 0. Es más eficiente en los MSP430. */
-        if (++timer->counter == timer->target) {
-            timer->counter = 0;
+        if (!--timer->counter) {
+            timer->counter = timer->target;
             add_to_queue(timer->callback);
         }
 

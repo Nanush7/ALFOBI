@@ -65,7 +65,7 @@ template_range_t get_template_range(global_arrow_data_t* arrow_data, uint8_t hei
 void render_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t is_outline) {
 
     template_range_t range = get_template_range(arrow_data, height);
-    set_cursor_position(arrow_data->page, height + range.start);
+    set_cursor_position(arrow_data->arrow_direction, height + range.start);
 
     const uint8_t* template_aux;
     if (is_outline)
@@ -117,7 +117,7 @@ void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height) {
     template_range_t range = get_template_range(arrow_data, height);
 
     /* Establecemos las páginas correspondientes a la dirección de la flecha. */
-    set_cursor_position(arrow_data->page, height + range.start);
+    set_cursor_position(arrow_data->arrow_direction, height + range.start);
 
     for (uint8_t i = 0; i <= range.end - range.start; i++) {
         write_data(combine_with_static_elements(0, arrow_data, height + i));
