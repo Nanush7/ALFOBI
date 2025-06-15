@@ -8,13 +8,13 @@
 #include <stdint.h>
 
  /**
-  * @brief configura la USCI_B en modo I2C.
+  * @brief Configurar la USCI_B en modo I2C.
   * Se usa como fuente de reloj el SMCLK, que a su vez usa como fuente el VLO.
   */
 void init_i2c(uint8_t slave_address);
 
 /**
- * @brief Inicia el envío de mensaje por I2C.
+ * @brief Iniciar el envío de mensaje por I2C.
  */
 void send_message(uint8_t message[2]);
 

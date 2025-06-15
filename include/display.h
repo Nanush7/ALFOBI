@@ -9,7 +9,7 @@
 void init_display(void);
 
 /**
- * @brief Limpia el display en el área comprendida entre el page_start, el column_start y el fin del display.
+ * @brief Limpiar el display en el área comprendida entre el page_start, el column_start y el fin del display.
  *
  * @param page_start Desde qué página comenzar a limpiar.
  * @param column_start Desde qué columna comenzar a limpiar.
@@ -27,7 +27,7 @@ void clear_area(uint8_t page_start, uint8_t column_start);
 void set_cursor_position(uint8_t page_start, uint8_t column_start);
 
 /**
- * @brief Escribe el dato en el display 
+ * @brief Escribir el dato en el display 
  *
  * @param data valor a ser escrito en el display.
 */
