@@ -12,12 +12,7 @@
 #include <stdint.h>
 #include <func_queue.h>
 
-/* En caso de cambiarse esto, se debería modificar el código del timer_hw. */
-#define TIMER_INTERVAL 50
-
-/*
- * El timer se inicializa en 0 por defecto en el archivo de implementación.
- */
+#define MS_BETWEEN_TIMER_INTERRUPTS 20
 
 /**
  * @struct timer_t
@@ -34,17 +29,22 @@ typedef struct {
 } timer_t;
 
 /**
- * @brief Inicializa un timer recurrente.
+ * @brief Inicializar un timer recurrente.
  *
  * @param target_interval Cada cuántas interrupciones del reloj se encola la 
  */
 void init_timer(timer_t* timer, uint8_t target, func* callback);
 
 /**
- * @brief Incrementa el contador del timer. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
- *
- * @param timer El timer a incrementar.
+ * @brief Agregar timer lógico a la lista de timers lógicos.
+ * 
+ * @param timer El timer lógico a agregar.
+ */
+void add_timer(timer_t timer);
+
+/**
+ * @brief Incrementar los timers lógicos registrados. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
 */
-void increment_counter(timer_t* timer);
+void increment_counters(void);
 
 #endif // TIMER_H

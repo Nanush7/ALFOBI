@@ -19,6 +19,7 @@ Release/
 .jxbrowser-data/
 doxygen/html/
 *.lnk
+CMakeLists.txt
 
 *.exe
 *.out

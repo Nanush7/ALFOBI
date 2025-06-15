@@ -39,7 +39,7 @@ void dequeue_from_msg_queue(void) {
         msg_head = 0;
 }
 
-uint8_t next_from_msg_queue() {
+uint8_t next_from_msg_queue(void) {
     ASSERT(!msg_queue_is_empty());
 
     return msg_queue[msg_head];
