@@ -1,73 +1,42 @@
 #include <msp430.h>
+#include <stdlib.h>
 #include "intrinsics.h"
 #include "i2c.h"
-#include "display.h"
 #include <timer.h>
 #include <timer_hw.h>
 #include <func_queue.h>
-#include <gui.h>
+#include <display.h>
+#include <keyboard.h>
+#include <game.h>
 
-typedef struct {
-    arrow_direction_t direction;
-    uint8_t height; 
-    uint8_t active; /* A modo de prototipo! */
-} arrow_t;
-
-arrow_t arrows[4] = {
-    {UP, 20, 1}, {LEFT, 17, 1}, {RIGHT, 17, 1}, {DOWN, 20, 1}
-};
-
-uint8_t score_array[4] = {'0', '0', '0', '0'};
-uint8_t level_array[1] = {'1'};
-gui_counter_t score = {4, score_array};
-gui_counter_t level = {1, level_array};
-
-void lower_arrows(void) {
-
-    gui_increment_counter(&score, 7);
-    gui_increment_counter(&level, 1);
-    render_chars(score.digits, score.digit_amount, 0, 6);
-    render_chars(level.digits, level.digit_amount, 0, 12);
-
-    for (uint8_t i = 0; i < 4; i++) {
-        arrow_t* arrow_ptr = arrows + i;
-
-        if (!arrow_ptr->active)
-            continue;
-
-        clean_arrow(arrow_ptr->direction, arrow_ptr->height);
-        arrow_ptr->height++;
-        if (arrow_ptr->height > 127) {
-            arrow_ptr->active = 0;
-        } else {
-            render_arrow(arrow_ptr->direction, arrow_ptr->height, 0);
-        }
-    }
-}
 
 int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    init_queue();
-    init_i2c(0x3C);
-    init_timer_hw();
+    /* Le subimos la velocidad al DCO (usado por MCLK). */
+    BCSCTL1 &= ~RSEL2;
+    BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
 
-    timer_t timer;
-    init_timer(&timer, 4, lower_arrows);
-    add_timer(timer);
+    /* LED assert. */
+    P1DIR |= BIT0;
+    P1OUT &= ~BIT0;
+
+    init_queue(); /* Cola de funciones. */
+    init_i2c(0x3C);
+    init_keyboard();
+    init_timer_hw();
+    init_display();
+
+    srand(17);
+
+    timer_t timer_game_tick;
+    init_timer(&timer_game_tick, 1, game_tick);
+    add_timer(timer_game_tick);
+
+    main_menu();
 
     __enable_interrupt();
-
-    init_gui();
-
-    render_chars(score.digits, score.digit_amount, 0, 6);
-    render_chars(level.digits, level.digit_amount, 0, 12);
-
-    for (uint8_t i = 0; i < 4; i++) {
-        arrow_t* arrow_ptr = arrows + i;
-        render_arrow(arrow_ptr->direction, arrow_ptr->height, 0);
-    }
 
     while (1) {
         while (!queue_is_empty()) {

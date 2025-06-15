@@ -9,7 +9,7 @@ uint8_t head;
 /** Próximo elemento a agregar en la cola. */
 uint8_t tail;
 
-void init_queue() {
+void init_queue(void) {
     head = 0;
     tail = 0;
 }
@@ -23,17 +23,17 @@ void add_to_queue(func* funcptr) {
         tail = 0;
 }
 
-uint8_t queue_is_empty() {
+uint8_t queue_is_empty(void) {
     return tail == head;
 }
 
-uint8_t queue_is_full() {
+uint8_t queue_is_full(void) {
     /* return (tail + 1) % QUEUE_SIZE == head. */
     /* Esto no lo hacemos así debido a que no contamos con operación de módulo por hardware. */
     return tail + 1 == head || (tail == QUEUE_SIZE - 1 && head == 0);
 }
 
-func* dequeue_from_queue() {
+func* dequeue_from_queue(void) {
     ASSERT(!queue_is_empty());
 
     func* res = queue[head];
