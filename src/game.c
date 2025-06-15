@@ -49,25 +49,25 @@ sequence_mode_t current_sequence_mode = NONE;
 
 /* Arreglos probabilísticos de selección de estados, por nivel. */
 const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE] = {
-    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE},
-    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE},
-    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE},
-    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE},
-    {TRIPLE, SINGLE, SINGLE, NONE, DOUBLE, TRIPLE, NONE, SINGLE},
-    {TRIPLE, SINGLE, SINGLE, NONE, DOUBLE, TRIPLE, NONE, SINGLE},
-    {TRIPLE, SINGLE, QUAD, SINGLE, DOUBLE, DOUBLE, TRIPLE, QUAD},
-    {TRIPLE, SINGLE, QUAD, SINGLE, DOUBLE, DOUBLE, TRIPLE, QUAD}
+    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
+    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
+    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE, SINGLE, NONE, DOUBLE, DOUBLE, SINGLE, NONE, SINGLE, SINGLE},
+    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE, SINGLE, NONE, DOUBLE, DOUBLE, SINGLE, NONE, SINGLE, SINGLE},
+    {TRIPLE, DOUBLE, DOUBLE, NONE, DOUBLE, TRIPLE, SINGLE, DOUBLE, TRIPLE, NONE, DOUBLE, DOUBLE, SINGLE, DOUBLE, TRIPLE, DOUBLE},
+    {TRIPLE, DOUBLE, DOUBLE, NONE, DOUBLE, TRIPLE, SINGLE, DOUBLE, TRIPLE, NONE, DOUBLE, DOUBLE, SINGLE, DOUBLE, TRIPLE, DOUBLE},
+    {TRIPLE, DOUBLE, QUAD, TRIPLE, DOUBLE, DOUBLE , DOUBLE, QUAD, SINGLE, TRIPLE, QUAD, SINGLE, SINGLE, QUAD, SINGLE,TRIPLE},
+    {TRIPLE, DOUBLE, QUAD, TRIPLE, DOUBLE, DOUBLE , DOUBLE, QUAD, SINGLE, TRIPLE, QUAD, SINGLE, SINGLE, QUAD, SINGLE,TRIPLE},
 };
 
 /* Pasos de secuencia para pasar de nivel. */
-const uint8_t sequence_iterations_per_level[MAX_LEVEL] = {5, 6, 6, 8, 8, 10, 10, 10};
+const int16_t sequence_iterations_per_level[MAX_LEVEL] = {10, 10, 15, 15, 15, 15, 25, 25};
 
 /* Velocidades por nivel */
 /* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
-const uint8_t speed_per_level[MAX_LEVEL] = {4, 4, 4, 4, 4, 4, 4, 4};
+const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 3, 2, 4, 2, 5, 2};
 
 /* Pasos de secuencia actual. */
-uint8_t current_sequence_iteration = 0;
+int16_t current_sequence_iteration = 0;
 
 /* Contador para saber cuándo se pueden introducir nuevas flechas. */
 uint8_t ticks_next_arrow = 0;
@@ -80,6 +80,9 @@ uint8_t ticks_lower_arrows = 4;
 
 /* Vidas */
 uint8_t lives = INIT_LIVES;
+
+/* Flag para dejar de mandar flechas al final del último nivel. */
+uint8_t last_level_stop = 0;
 
 /* Scoreboard. */
 uint16_t scores[SCORE_ARRAY_LENGTH];
@@ -249,17 +252,23 @@ void decrement_lives(void) {
  * @brief Dada una columna, baja todas las flechas una posición.
  *
  * @param column Los datos de la columna correspondiente.
+ * @returns Retorna 0 si no bajaron flechas. 1 en otro caso.
  */
-void lower_column_arrows(global_arrow_data_t* column) {
+uint8_t lower_column_arrows(global_arrow_data_t* column) {
+    uint8_t res = 0;
+
     for (uint8_t i = 0; i < MAX_ARROW_COUNT_PER_COLUMN; i++) {
         if (current_screen != GAME) {
-            return;
+            return res;
         }
 
         arrow_t* arrow_ptr = &column->arrows[i];
 
         if (!arrow_ptr->active)
             continue;
+
+        /* Pudimos bajar una flecha. */
+        res = 1;
 
         clean_arrow(column, arrow_ptr->height);
         arrow_ptr->height++;
@@ -273,6 +282,8 @@ void lower_column_arrows(global_arrow_data_t* column) {
             render_arrow(column, arrow_ptr->height, 0);
         }
     }
+
+    return res;
 }
 
 void lower_arrows(void) {
@@ -281,10 +292,17 @@ void lower_arrows(void) {
         return;
     }
 
+    uint8_t columns_are_active = 0;
+
     for (uint8_t i = 0; i < 4; i++) {
         if (current_screen != GAME)
             return;
-        lower_column_arrows(all_global_arrow_data[i]);
+        columns_are_active |= lower_column_arrows(all_global_arrow_data[i]);
+    }
+
+    if (last_level_stop && !columns_are_active) {
+        game_over(1);
+        return;
     }
 
     ticks_lower_arrows = speed;
@@ -455,6 +473,7 @@ void generate_arrows() {
     case SINGLE:
         // Mandamos la flecha por la columna seleccionada.
         add_new_arrow(all_global_arrow_data[column_number]);
+        current_sequence_iteration -= 1;
         break;
     case DOUBLE:
         // Sorteamos una columna que no sea la ya sorteada.
@@ -464,7 +483,7 @@ void generate_arrows() {
         }
         add_new_arrow(all_global_arrow_data[column_number]);
         add_new_arrow(all_global_arrow_data[column_number2]);
-        // Mandamos 2 flechas, cada una por la columna sorteada.
+        current_sequence_iteration -= 2;
         break;
     case TRIPLE:
         // Mandamos una flecha por cada columna, excepto por la que se sorteó.
@@ -473,35 +492,35 @@ void generate_arrows() {
                 add_new_arrow(all_global_arrow_data[column]);
             }
         }
+        current_sequence_iteration -= 3;
         break;
     case QUAD:
-        for (uint8_t column = 0; column < 3; column++) {
+        for (uint8_t column = 0; column < 4; column++) {
             add_new_arrow(all_global_arrow_data[column]);
         }
+        current_sequence_iteration -= 4;
         break;
     case NONE: /* NONE */
         next_game_state();
         return;
     }
 
-    --current_sequence_iteration;
     next_game_state();
 }
 
 void next_sequence(void) {
-    if (ticks_next_arrow)
+    if (ticks_next_arrow || last_level_stop)
         return;
 
     /* Avanzamos número de secuencia y manejamos nivel de dificultad. */
     uint8_t level_number = get_current_level();
 
-    /** TODO: el juego debería terminar cuando se presiona la última flecha, no cuando se genera. */
-    if (!current_sequence_iteration && level_number >= MAX_LEVEL) {
-        game_over(1);
+    if (current_sequence_iteration <= 0 && level_number >= MAX_LEVEL) {
+        last_level_stop = 1;
         return;
     }
 
-    if (!current_sequence_iteration) {
+    if (current_sequence_iteration <= 0) {
         current_sequence_iteration = sequence_iterations_per_level[level_number];
         speed = speed_per_level[level_number];
         ticks_lower_arrows = speed;
@@ -637,4 +656,5 @@ void init_game(void) {
     ticks_lower_arrows = speed;
     lives = INIT_LIVES;
     lost_lives = 0;
+    last_level_stop = 0;
 }

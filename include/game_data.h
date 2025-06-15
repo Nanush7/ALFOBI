@@ -4,10 +4,10 @@
 #include <stdint.h>
 
 /* Juego */
-#define INIT_LIVES                       3
-#define VERTICAL_ARROW_SPACING           7 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
+#define INIT_LIVES                       5
+#define VERTICAL_ARROW_SPACING           8 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
 #define MAX_ARROW_COUNT_PER_COLUMN       6
-#define PROBABILITY_ARRAY_SIZE           8
+#define PROBABILITY_ARRAY_SIZE           16
 #define MAX_LEVEL                        8
 #define SCORE_ARRAY_LENGTH               9 /* Si se aumenta por encima de 9, hace falta cambiar la lógica. */
 

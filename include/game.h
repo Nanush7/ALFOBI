@@ -32,6 +32,7 @@ void init_game(void);
 
 /**r
  * @brief Bajar las flechas que corresponda.
+ * Chequea si bajó la última flecha del último nivel para mostrar win.
  */
 void lower_arrows(void);
 
