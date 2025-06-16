@@ -12,7 +12,7 @@
 /*=========================*/
 
 /* Datos globales de flechas. */
-global_arrow_data_t left_arrow_data = {
+global_arrow_data_t right_arrow_data = {
     RIGHT, LEFT_RIGHT_ARROW_SIZE, RIGHT_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_LEFT_RIGHT, {}
 };
 
@@ -24,7 +24,7 @@ global_arrow_data_t up_arrow_data = {
     UP, UP_DOWN_ARROW_SIZE, UP_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_UP_DOWN, {}
 };
 
-global_arrow_data_t right_arrow_data = {
+global_arrow_data_t left_arrow_data = {
     LEFT, LEFT_RIGHT_ARROW_SIZE, LEFT_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_LEFT_RIGHT, {}
 };
 
@@ -131,7 +131,7 @@ void main_menu(void) {
         render_arrow(all_global_arrow_data[i], 59, 0);
     }
 
-    render_chars("FABRI", 5, 0, 78);
+    render_chars("FABRICIO", 8, 0, 78);
     render_chars("RICARDO", 7, 0, 85);
     render_chars("GENNARO", 7, 0, 92);
     render_chars("JOSEFINA", 8, 0, 99);
@@ -155,10 +155,10 @@ void show_info_screen() {
     for (uint8_t i = 0; i < 4; i++) {
         render_arrow(all_global_arrow_data[i], 75, 0);
     }
-    render_chars("2", 1, 2, 86);
-    render_chars("5", 1, 10, 86);
-    render_chars("8", 1, 19, 86);
-    render_chars("0", 1, 28, 86);
+    render_chars("0", 1, 2, 86);
+    render_chars("8", 1, 10, 86);
+    render_chars("5", 1, 19, 86);
+    render_chars("2", 1, 28, 86);
 }
 
 /**
@@ -357,9 +357,9 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
     }
 
     /* Si se encuentra, vemos qué tan abajo estaba la flecha. Si estaba lo suficientemente abajo manejamos puntuación, si no, pierde una vida. */
-    if (lowest_arrow->height <= arrow_data->outline_height - arrow_size) {
+    if (lowest_arrow->height <= arrow_data->outline_height - arrow_size - PRESS_TOLERANCE) {
         decrement_lives();
-    } else {
+    } else if (lowest_arrow->height > arrow_data->outline_height - arrow_size) {
         /* Asumimos que no se desborda. */
         int16_t score_increment = MAX_SCORE_FOR_ARROW - abs((int16_t)lowest_arrow->height - (int16_t)arrow_data->outline_height);
         increment_counter(&score, score_increment);
@@ -425,11 +425,11 @@ void handle_keys(void) {
         handle_column_keypress(&left_arrow_data);
     }
 
-    if (pressed_keys.five) { /* Up arrow. */
+    if (pressed_keys.eight) { /* Up arrow. */
         handle_column_keypress(&up_arrow_data);
     }
 
-    if (pressed_keys.eight) { /* Down arrow. */
+    if (pressed_keys.five) { /* Down arrow. */
         handle_column_keypress(&down_arrow_data);
     }
 

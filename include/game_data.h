@@ -10,6 +10,7 @@
 #define PROBABILITY_ARRAY_SIZE           16
 #define MAX_LEVEL                        8
 #define SCORE_ARRAY_LENGTH               9 /* Si se aumenta por encima de 9, hace falta cambiar la lógica. */
+#define PRESS_TOLERANCE                  4
 
 /* GUI */
 #define LEFT_OUTLINE_HEIGHT              120
