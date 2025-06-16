@@ -23,6 +23,14 @@
 #define LEFT_RIGHT_ARROW_SIZE            7
 #define UP_DOWN_ARROW_SIZE               4
 
+typedef enum {
+    NONE,
+    SINGLE,
+    DOUBLE,
+    TRIPLE,
+    QUAD
+} sequence_mode_t;
+
 extern const uint8_t template_left[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_right[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_up[UP_DOWN_ARROW_SIZE];
@@ -32,6 +40,16 @@ extern const uint8_t template_right_outline[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_up_outline[UP_DOWN_ARROW_SIZE];
 extern const uint8_t template_down_outline[UP_DOWN_ARROW_SIZE];
 extern const uint8_t numbers_5x3[58][5];
+
+/* Arreglos probabilísticos de selección de estados, por nivel. */
+extern const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE];
+
+/* Pasos de secuencia para pasar de nivel. */
+extern const int16_t sequence_iterations_per_level[MAX_LEVEL];
+
+/* Velocidades por nivel */
+/* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
+extern const uint8_t speed_per_level[MAX_LEVEL];
 
 typedef enum {
     RIGHT = 0,

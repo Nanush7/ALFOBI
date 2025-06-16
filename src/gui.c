@@ -112,12 +112,17 @@ void clean_range(uint8_t min_page, uint8_t max_page, uint8_t min_column, uint8_t
     }
 }
 
-void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height) {
+void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t fast_clean) {
 
     template_range_t range = get_template_range(arrow_data, height);
 
     /* Establecemos las páginas correspondientes a la dirección de la flecha. */
     set_cursor_position(arrow_data->arrow_direction, height + range.start);
+
+    if (fast_clean) {
+        write_data(combine_with_static_elements(0, arrow_data, height));
+        return;
+    }
 
     for (uint8_t i = 0; i <= range.end - range.start; i++) {
         write_data(combine_with_static_elements(0, arrow_data, height + i));

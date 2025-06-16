@@ -14,9 +14,12 @@ int main() {
     /* Paramos el Watchdog. */
     WDTCTL = WDTPW + WDTHOLD;
 
-    /* Le subimos la velocidad al DCO (usado por MCLK). */
+    /* Le subimos la velocidad al DCO (usado por MCLK y SMCLK). */
     BCSCTL1 &= ~RSEL2;
     BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
+
+    /* Dvidimos la frecuencia del SMCLK entre 8. */
+    // BCSCTL2 |= DIVS_3;
 
     /* LED assert. */
     P1DIR |= BIT0;

@@ -49,10 +49,11 @@ void clean_range(uint8_t min_page, uint8_t max_page, uint8_t min_column, uint8_t
 /**
  * @brief Limpiar posición donde había flecha en el display.
  *
- * @param arrow_data  Los datos globales de la flecha a dibujar.
- * @param height      La altura actual de la flecha (entre 17 y 127 para derecha/izquiera y entre 20 y 127 para arriba/abajo).
+ * @param arrow_data Los datos globales de la flecha a dibujar.
+ * @param height     La altura actual de la flecha (entre 17 y 127 para derecha/izquiera y entre 20 y 127 para arriba/abajo).
+ * @param fast_clean Si vale 1, limpia solo la posición anterior a la altura de la flecha. Si no, limpia toda la flecha.
  */
-void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height);
+void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t fast_clean);
 
 /**
  * @brief Imprime arreglo de caracteres en una posición dada del display.

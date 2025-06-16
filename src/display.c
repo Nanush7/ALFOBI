@@ -97,7 +97,6 @@ void init_display(void) {
     command(0xF1);
 
     command(SET_VCOM_DESELECT);
-    /** TODO: No sabemos si dejarlo en 0x40. */
     command(0x30);
 
     command(DISPLAY_ALL_ON_RESUME);

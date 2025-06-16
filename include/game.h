@@ -11,14 +11,6 @@ typedef enum {
     GAME_OVER
 } screen_t;
 
-typedef enum {
-    NONE,
-    SINGLE,
-    DOUBLE,
-    TRIPLE,
-    QUAD
-} sequence_mode_t;
-
 /**
  * @brief Muestra el menú principal.
  * Cambia estado a MAIN.

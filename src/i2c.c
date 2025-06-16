@@ -28,8 +28,6 @@ void init_i2c(uint8_t slave_addr) {
     /** TODO: Ver si podemos usar más de 100kHz. Tendríamos que cambiar la config del display también.
     DCOCTL  |= DCO1  | DCO2; */
 
-    // UCB0BR0 = 11; /* Así se setearía un divisor de 11. */
-
     /* Configuramos la USCI_B: */
     /* Modo master + modo I2C + comunicación sincronizada. */
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;
@@ -50,7 +48,6 @@ void init_i2c(uint8_t slave_addr) {
 }
 
 void send_message(uint8_t message[2]) {
-    /** TODO: ver si funciona el deshabilitar solo interrupciones de la USCI */
     /* Protegemos la cola de mensajes, ya que es un dato compartido con la ISR de transmisión. */
     __disable_interrupt();
     uint8_t was_queue_empty = msg_queue_is_empty();

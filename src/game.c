@@ -47,25 +47,6 @@ uint8_t debug  = 0;
 /* Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
 
-/* Arreglos probabilísticos de selección de estados, por nivel. */
-const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE] = {
-    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
-    {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
-    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE, SINGLE, NONE, DOUBLE, DOUBLE, SINGLE, NONE, SINGLE, SINGLE},
-    {DOUBLE, SINGLE, SINGLE, NONE, DOUBLE, SINGLE, SINGLE, NONE, SINGLE, NONE, DOUBLE, DOUBLE, SINGLE, NONE, SINGLE, SINGLE},
-    {TRIPLE, DOUBLE, DOUBLE, NONE, DOUBLE, TRIPLE, SINGLE, DOUBLE, TRIPLE, NONE, DOUBLE, DOUBLE, SINGLE, DOUBLE, TRIPLE, DOUBLE},
-    {TRIPLE, DOUBLE, DOUBLE, NONE, DOUBLE, TRIPLE, SINGLE, DOUBLE, TRIPLE, NONE, DOUBLE, DOUBLE, SINGLE, DOUBLE, TRIPLE, DOUBLE},
-    {TRIPLE, DOUBLE, QUAD, TRIPLE, DOUBLE, DOUBLE , DOUBLE, QUAD, SINGLE, TRIPLE, QUAD, SINGLE, SINGLE, QUAD, SINGLE,TRIPLE},
-    {TRIPLE, DOUBLE, QUAD, TRIPLE, DOUBLE, DOUBLE , DOUBLE, QUAD, SINGLE, TRIPLE, QUAD, SINGLE, SINGLE, QUAD, SINGLE,TRIPLE},
-};
-
-/* Pasos de secuencia para pasar de nivel. */
-const int16_t sequence_iterations_per_level[MAX_LEVEL] = {10, 10, 15, 15, 15, 15, 25, 25};
-
-/* Velocidades por nivel */
-/* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
-const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 3, 2, 4, 2, 5, 2};
-
 /* Pasos de secuencia actual. */
 int16_t current_sequence_iteration = 0;
 
@@ -146,7 +127,7 @@ void main_menu(void) {
     render_chars("PRESS #", 7, 2, 76);
 
     for (uint8_t i = 0; i < 4; i++) {
-        render_arrow(all_global_arrow_data[i], 84, 0);
+        render_arrow(all_global_arrow_data[i], 85, 0);
     }
 }
 
@@ -270,7 +251,7 @@ uint8_t lower_column_arrows(global_arrow_data_t* column) {
         /* Pudimos bajar una flecha. */
         res = 1;
 
-        clean_arrow(column, arrow_ptr->height);
+        clean_arrow(column, arrow_ptr->height, 1);
         arrow_ptr->height++;
         if (arrow_ptr->height > 127) {
             arrow_ptr->active = 0;
@@ -350,7 +331,6 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
         decrement_lives();
     } else {
         /* Asumimos que no se desborda. */
-        /** TODO: este score no está funcionando cuantitativamente como esperábamos, aunque sí cualitativamente. */
         int16_t score_increment = MAX_SCORE_FOR_ARROW - abs((int16_t)lowest_arrow->height - (int16_t)arrow_data->outline_height);
         increment_counter(&score, score_increment);
         render_chars(score.digits, 4, 17, 0);
@@ -358,7 +338,7 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
 
     if (current_screen == GAME) {
         lowest_arrow->active = 0;
-        clean_arrow(arrow_data, lowest_arrow->height);
+        clean_arrow(arrow_data, lowest_arrow->height, 0);
     }
 }
 
@@ -424,7 +404,6 @@ void game_tick(void) {
     if (!paused && current_screen == GAME) {
         lost_lives = 0;
         lower_arrows();
-        /** TODO: lost_lives = 0; */
         next_sequence();
     }
 }
