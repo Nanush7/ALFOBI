@@ -53,7 +53,7 @@ extern const uint8_t speed_per_level[MAX_LEVEL];
 
 typedef struct {
     uint16_t array[SCORE_ARRAY_LENGTH];
-    uint8_t tail;
+    uint16_t tail;
 } scores_t;
 
 typedef enum {
