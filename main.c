@@ -8,7 +8,6 @@
 #include <display.h>
 #include <keyboard.h>
 #include <game.h>
-
 #include "flash.h"
 
 
@@ -23,7 +22,7 @@ int main() {
     /* Dvidimos la frecuencia del SMCLK entre 8. */
     // BCSCTL2 |= DIVS_3;
 
-    /* LED assert. */
+    /* LED assert y write Flash. */
     P1DIR |= BIT0;
     P1OUT &= ~BIT0;
 

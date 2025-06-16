@@ -14,6 +14,7 @@ void get_flash_scores(scores_t* res) {
 }
 
 void store_scores_to_flash(scores_t* scores) {
+    P1OUT |= BIT0;
     __disable_interrupt();
 
     /* Desbloquear flash */
@@ -44,4 +45,5 @@ void store_scores_to_flash(scores_t* scores) {
     FCTL3 = FWKEY + LOCK;
 
     __enable_interrupt();
+    P1OUT &= ~BIT0;
 }

@@ -17,6 +17,10 @@ Proyecto de fin de curso de Sistemas Embebidos para Tiempo Real.
 
 Los cables van de izquierda a derecha, en los siguientes puertos: P2.0, P2.3, P2.4, P2.5, P1.1, P1.2, P1.3, P1.4.
 
+### Jumpers
+
+Sacar los jumpers de P2.1, P2.3, P2.5 y P1.6. El jumper de P1.0 debe quedar puesto.
+
 ### Flash
 
 Para poder persistir la tabla de resultados en memoria Flash, es necesario modificar el archivo lnk_msp430g2553.cmd de la siguiente manera:

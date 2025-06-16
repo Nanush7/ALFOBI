@@ -1,3 +1,4 @@
+#include "gui.h"
 #include <game.h>
 #include <game_data.h>
 #include <keyboard.h>
@@ -122,23 +123,42 @@ void main_menu(void) {
     current_screen = MAIN;
     clean_range(0, 3, 0, 127);
 
-    render_chars("ALFOBI", 6, 4, 60);
-    render_chars(":)", 2, 11, 68);
-    render_chars("PRESS #", 7, 2, 76);
+    render_chars("ALFOBI", 6, 4, 20);
+    render_chars(":)", 2, 11, 28);
+    render_chars("PRESS C", 7, 2, 50);
 
     for (uint8_t i = 0; i < 4; i++) {
-        render_arrow(all_global_arrow_data[i], 85, 0);
+        render_arrow(all_global_arrow_data[i], 59, 0);
     }
+
+    render_chars("FABRI", 5, 0, 78);
+    render_chars("RICARDO", 7, 0, 85);
+    render_chars("GENNARO", 7, 0, 92);
+    render_chars("JOSEFINA", 8, 0, 99);
 }
 
 /**
  * @brief Mostrar pantalla de información.
  */
-void show_about() {
-    current_screen = ABOUT;
+void show_info_screen() {
+    current_screen = INFO;
     clean_range(0, 3, 0, 127);
-    /** TODO: Terminar. */
-    // render_chars("ABOUT", 5, );
+
+    render_chars("INFO", 4, 4, 3);
+    render_chars("1 SAVE", 6, 0, 24);
+    render_chars("A MAIN", 6, 0, 32);
+    render_chars("B SCORE", 7, 0, 40);
+    render_chars("D DEBUG", 7, 0, 48);
+    render_chars("* PAUSA", 7, 0, 56);
+    render_chars("# JUGAR", 7, 0, 64);
+
+    for (uint8_t i = 0; i < 4; i++) {
+        render_arrow(all_global_arrow_data[i], 75, 0);
+    }
+    render_chars("2", 1, 2, 86);
+    render_chars("5", 1, 10, 86);
+    render_chars("8", 1, 19, 86);
+    render_chars("0", 1, 28, 86);
 }
 
 /**
@@ -377,7 +397,7 @@ void handle_keys(void) {
     }
 
     if (pressed_keys.c) {
-        show_about();
+        show_info_screen();
         return;
     }
 

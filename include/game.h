@@ -9,7 +9,7 @@ typedef enum {
     GAME,
     SCOREBOARD,
     GAME_OVER,
-    ABOUT
+    INFO
 } screen_t;
 
 /**
