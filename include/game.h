@@ -8,7 +8,8 @@ typedef enum {
     MAIN,
     GAME,
     SCOREBOARD,
-    GAME_OVER
+    GAME_OVER,
+    ABOUT
 } screen_t;
 
 /**
@@ -66,5 +67,9 @@ void decrement_counter(gui_counter_t* counter, uint8_t value);
  * Baja flechas y actualiza juego (secuencia, dificultad, etc.)
  */
 void game_tick(void);
+
+/** TODO: doxygen */
+void set_scores(scores_t* scores_param);
+
 
 #endif /* GAME_H */

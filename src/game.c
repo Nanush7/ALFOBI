@@ -4,6 +4,7 @@
 #include <assert_test.h>
 #include <stdlib.h>
 #include <string_utils.h>
+#include <flash.h>
 
 /*=========================*/
 /* Estado global del juego */
@@ -66,8 +67,7 @@ uint8_t lives = INIT_LIVES;
 uint8_t last_level_stop = 0;
 
 /* Scoreboard. */
-uint16_t scores[SCORE_ARRAY_LENGTH];
-uint8_t scores_tail = 0;
+scores_t scores;
 
 /* Flag que indica si en el tick actual ya se perdieron vidas. */
 uint8_t lost_lives = 0;
@@ -132,32 +132,42 @@ void main_menu(void) {
 }
 
 /**
+ * @brief Mostrar pantalla de información.
+ */
+void show_about() {
+    current_screen = ABOUT;
+    clean_range(0, 3, 0, 127);
+    /** TODO: Terminar. */
+    // render_chars("ABOUT", 5, );
+}
+
+/**
  * @brief Agregar puntaje actual al scoreboard.
  * Se inserta ordenado y se reemplaza el peor resultado si no hay espacio.
  */
 void add_to_scoreboard(uint16_t score_to_add) {
 
     /* Si la tabla está llena y el score es peor que el último, no se agrega. */
-    if (scores_tail == SCORE_ARRAY_LENGTH && scores[scores_tail - 1] > score_to_add)
+    if (scores.tail == SCORE_ARRAY_LENGTH && scores.array[scores.tail - 1] > score_to_add)
         return;
 
     /* Si hay lugar para una entrada nueva, la usamos. Si no, sobrescribimos el último. */
     /* Tail es la posición de la nueva última flecha. */
-    uint8_t tail = scores_tail < SCORE_ARRAY_LENGTH ? scores_tail : scores_tail - 1;
+    uint8_t tail = scores.tail < SCORE_ARRAY_LENGTH ? scores.tail : scores.tail - 1;
 
-    scores[tail] = score_to_add;
+    scores.array[tail] = score_to_add;
 
     for (uint8_t i = tail; i; i--) {
-        if (scores[i] <= scores[i-1])
+        if (scores.array[i] <= scores.array[i-1])
             break;
 
-        uint16_t aux = scores[i];
-        scores[i]    = scores[i-1];
-        scores[i-1]  = aux;
+        uint16_t aux = scores.array[i];
+        scores.array[i]    = scores.array[i-1];
+        scores.array[i-1]  = aux;
     }
 
-    if (scores_tail < SCORE_ARRAY_LENGTH) {
-        scores_tail++;
+    if (scores.tail < SCORE_ARRAY_LENGTH) {
+        scores.tail++;
     }
 }
 
@@ -189,7 +199,7 @@ void show_scoreboard(void) {
     render_chars("TOP", 3, 9, 13);
     render_chars("SCORES", 6, 3, 19);
 
-    if (!scores_tail) {
+    if (!scores.tail) {
         render_chars("404", 3, 10, 30);
         render_chars("NOT", 3, 10, 37);
         render_chars("FOUND", 5, 6, 44);
@@ -197,9 +207,9 @@ void show_scoreboard(void) {
     }
 
     uint8_t score_entry_height = 30;
-    for (uint8_t i = 0; i < scores_tail; i++) {
+    for (uint8_t i = 0; i < scores.tail; i++) {
         uint8_t score_str[4];
-        alfobi_itoa(scores[i], score_str, 4);
+        alfobi_itoa(scores.array[i], score_str, 4);
         uint8_t index_str[2] = {'1' + i , '-'};
         render_chars(index_str, 1, 4, score_entry_height);
         render_chars(score_str, 4, 15, score_entry_height);
@@ -348,7 +358,11 @@ void handle_column_keypress(global_arrow_data_t* arrow_data) {
 void handle_keys(void) {
     keys_t pressed_keys = get_pressed_keys();
 
-    if (!*(uint16_t*)&pressed_keys) {
+    if (!*(uint16_t*)&pressed_keys)
+        return;
+
+    if (pressed_keys.one && current_screen != GAME) {
+        store_scores_to_flash(&scores);
         return;
     }
 
@@ -359,6 +373,11 @@ void handle_keys(void) {
 
     if (pressed_keys.b) {
         show_scoreboard();
+        return;
+    }
+
+    if (pressed_keys.c) {
+        show_about();
         return;
     }
 
@@ -613,4 +632,8 @@ void init_game(void) {
     lives = INIT_LIVES;
     lost_lives = 0;
     last_level_stop = 0;
+}
+
+void set_scores(scores_t* scores_param) {
+    scores = *scores_param;
 }

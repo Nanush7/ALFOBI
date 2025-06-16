@@ -9,6 +9,8 @@
 #include <keyboard.h>
 #include <game.h>
 
+#include "flash.h"
+
 
 int main() {
     /* Paramos el Watchdog. */
@@ -32,6 +34,12 @@ int main() {
     init_display();
 
     srand(17);
+
+    init_flash();
+
+    scores_t scores = {{0}, 0};
+    get_flash_scores(&scores);
+    set_scores(&scores);
 
     timer_t timer_game_tick;
     init_timer(&timer_game_tick, 1, game_tick);
