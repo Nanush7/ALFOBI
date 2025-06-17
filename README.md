@@ -50,3 +50,11 @@ MEMORY
     // ...
 }
 ```
+
+## Troubleshooting
+
+### Se prende el LED de P1.0 y se tranca el display.
+
+Posible solución: desconectar el display de la fuente y volver a conectar. Luego presionar el botón de reset de la placa.
+
+Explicación: cuando la ejecución se corta durante una transmisión I2C, queda la flag `UCBBUSY` encendida y el display queda en un estado inválido.

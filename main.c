@@ -16,11 +16,7 @@ int main() {
     WDTCTL = WDTPW + WDTHOLD;
 
     /* Le subimos la velocidad al DCO (usado por MCLK y SMCLK). */
-    BCSCTL1 &= ~RSEL2;
     BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
-
-    /* Dvidimos la frecuencia del SMCLK entre 8. */
-    // BCSCTL2 |= DIVS_3;
 
     /* LED assert y write Flash. */
     P1DIR |= BIT0;

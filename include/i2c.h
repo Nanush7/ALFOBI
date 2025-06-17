@@ -10,11 +10,15 @@
  /**
   * @brief Configurar la USCI_B en modo I2C.
   * Se usa como fuente de reloj el SMCLK, que a su vez usa como fuente el VLO.
+  *
+  * @param slave_address La dirección del slave I2C.
   */
 void init_i2c(uint8_t slave_address);
 
 /**
  * @brief Iniciar el envío de mensaje por I2C.
+ *
+ * @param message Arreglo con tipo de mensaje (comando, datos) en la primera posición y datos en la segunda.
  */
 void send_message(uint8_t message[2]);
 
