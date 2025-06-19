@@ -1,13 +1,13 @@
 /**
  * @file keyboard.h
- * @brief Configuracion y procesamiento del teclado.
+ * @brief Módulo de configuracion y uso del teclado GPIO.
  */
-
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
 
 #include <stdint.h>
 
+/** Estructura de teclas presionadas. Un bit para cada posible tecla que vale 1 si está presionada o 0 en caso contrario. */
 typedef struct {
     uint8_t one:   1;
     uint8_t two:   1;
@@ -43,7 +43,8 @@ keys_t get_pressed_keys(void);
 
 /**
  * @brief Chequear y guardar las teclas presionadas.
- * Las teclas presionadas se mantienen hasta que se ejecuta @c get_pressed_keys().
+ * Las teclas presionadas se mantienen guardadas hasta que se ejecuta @c get_pressed_keys()
+ * (se van acumulando las teclas presionadas hasta que otro módulo las lea).
  */
 void handle_keypress(void);
 

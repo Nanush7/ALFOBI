@@ -1,6 +1,8 @@
 /**
- * @brief funciones para posibilitar comunicación por I2C.
- * Se implementa un master transmitter con slave adresses de 7 bits y SMCLK.
+ * @file i2c.h
+ * @brief Módulo para transmisión I2C.
+ * Se implementa un master transmitter con slave adresses de 7 bits y SMCLK como señal de clock.
+ * solo se permite un slave fijo. Se utiliza el módulo @c msg_queue.h para la cola de mensajes a enviar.
  */
 #ifndef I2C_H
 #define I2C_H
@@ -9,16 +11,16 @@
 
  /**
   * @brief Configurar la USCI_B en modo I2C.
-  * Se usa como fuente de reloj el SMCLK, que a su vez usa como fuente el VLO.
+  * Se usa como señal el SMCLK, que a su vez usa el DCO como fuente.
   *
   * @param slave_address La dirección del slave I2C.
   */
 void init_i2c(uint8_t slave_address);
 
 /**
- * @brief Iniciar el envío de mensaje por I2C.
+ * @brief Enviar mensaje de 2 bytes al slave por I2C.
  *
- * @param message Arreglo con tipo de mensaje (comando, datos) en la primera posición y datos en la segunda.
+ * @param message Arreglo con los dos bytes a enviar.
  */
 void send_message(uint8_t message[2]);
 

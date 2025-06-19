@@ -63,7 +63,7 @@ void send_message(uint8_t message[2]) {
     UCB0CTL1 |= UCTR | UCTXSTT;
 }
 
-/* Rutina de atención de la interrupción de buffer vacío */
+/** Rutina de atención de la interrupción de buffer de transmisión vacío. */
 #pragma vector=USCIAB0TX_VECTOR
 __interrupt void FREE_TX_BUFFER(void) {
     /* Si no tenemos más mensajes para enviar, desactivamos estas interrupciones. */
@@ -85,6 +85,7 @@ __interrupt void FREE_TX_BUFFER(void) {
     }
 }
 
+/** Rutina de atención de la interrupción de NACKs. */
 #pragma vector=USCIAB0RX_VECTOR
 __interrupt void NACK_ISR(void) {
     ASSERT(UCB0STAT & UCNACKIFG);
