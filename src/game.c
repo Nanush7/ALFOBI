@@ -73,6 +73,9 @@ scores_t scores;
 /* Flag que indica si en el tick actual ya se perdieron vidas. */
 uint8_t lost_lives = 0;
 
+/* Puntero a seed para generación de números pseudoaleatorios. */
+uint16_t* rand_seed = 0;
+
 /*=============================*/
 /* Fin estado global del juego */
 /*=============================*/
@@ -652,8 +655,15 @@ void init_game(void) {
     lives = INIT_LIVES;
     lost_lives = 0;
     last_level_stop = 0;
+
+    ASSERT(rand_seed); /* rand_seed != NULL. */
+    srand(*rand_seed);
 }
 
 void set_scores(scores_t* scores_param) {
     scores = *scores_param;
+}
+
+void init_game_seed(uint16_t* seed_ptr) {
+    rand_seed = seed_ptr;
 }

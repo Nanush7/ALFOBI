@@ -1,5 +1,4 @@
 #include <msp430.h>
-#include <stdlib.h>
 #include "intrinsics.h"
 #include "i2c.h"
 #include <timer.h>
@@ -10,6 +9,8 @@
 #include <game.h>
 #include "flash.h"
 
+
+uint16_t game_rand_seed = 0;
 
 int main() {
     /* Paramos el Watchdog. */
@@ -28,7 +29,7 @@ int main() {
     init_timer_hw();
     init_display();
 
-    srand(17);
+    init_game_seed(&game_rand_seed);
 
     init_flash();
 
@@ -51,6 +52,8 @@ int main() {
             __enable_interrupt();
             callback();
         }
+
+        game_rand_seed++;
 
         __disable_interrupt();
         if (queue_is_empty()) {

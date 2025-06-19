@@ -76,4 +76,12 @@ void game_tick(void);
  */
 void set_scores(scores_t* scores_param);
 
+/**
+ * @brief Inicializar puntero a seed para generación de números pseudoaleatorios.
+ * El valor de la seed será modificado desde main y accedido a través del puntero al iniciar una nueva partida.
+ *
+ * @param seed_ptr Puntero a la seed manejada por main.
+ */
+void init_game_seed(uint16_t* seed_ptr);
+
 #endif /* GAME_H */
