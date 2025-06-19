@@ -5,7 +5,7 @@
 
 scores_t* flash_score = (scores_t*)0xC000;
 
-void init_flash() {
+void init_flash(void) {
     FCTL2 = FWKEY + FN5 + FN4 + FN2 + FN1 + FN0;
 }
 
@@ -33,7 +33,7 @@ void store_scores_to_flash(scores_t* scores) {
     /* Escribir palabra por palabra (16 bits). */
     uint16_t* src = (uint16_t*)scores;
     uint16_t* dst = (uint16_t*)flash_score;
-    uint16_t words = sizeof(scores_t) / 2;
+    static const uint16_t words = sizeof(scores_t) / 2;
     
     for(uint16_t i = 0; i < words; i++) {
         dst[i] = src[i];

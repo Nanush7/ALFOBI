@@ -51,6 +51,8 @@ int main() {
             __enable_interrupt();
             callback();
         }
+
+        __bis_SR_register(LPM3_bits + GIE);
     }
     return 0;
 }

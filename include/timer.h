@@ -44,7 +44,9 @@ void add_timer(timer_t timer);
 
 /**
  * @brief Incrementar los timers lógicos registrados. En caso de llegar a target, se resetea el contador y se ejecuta el callback.
-*/
-void increment_counters(void);
+ *
+ * @returns 1 si algún timer llegó al target. 0 en caso contrario.
+ */
+uint8_t increment_counters(void);
 
 #endif // TIMER_H

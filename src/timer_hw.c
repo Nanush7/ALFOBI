@@ -61,7 +61,8 @@ void disable_timer_A1(void) {
 
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer0_A0_ISR(void) {
-    increment_counters();
+    if (increment_counters())
+        __low_power_mode_off_on_exit();
 }
 
 #pragma vector=TIMER1_A0_VECTOR

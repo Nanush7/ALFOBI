@@ -22,15 +22,20 @@ void init_timer(timer_t* timer, uint8_t target, func* callback) {
     timer->callback = callback;
 }
 
-void increment_counters(void) {
+uint8_t increment_counters(void) {
+    uint8_t res = 0;
     timer_t* timer = timers;
+
     for (uint8_t i = timers_tail; i; i--) {
 
         if (!--timer->counter) {
             timer->counter = timer->target;
             add_to_queue(timer->callback);
+            res = 1;
         }
 
         timer++;
     }
+
+    return res;
 }

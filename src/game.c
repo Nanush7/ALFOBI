@@ -131,16 +131,16 @@ void main_menu(void) {
         render_arrow(all_global_arrow_data[i], 59, 0);
     }
 
-    render_chars("FABRICIO", 8, 0, 78);
     render_chars("RICARDO", 7, 0, 85);
     render_chars("GENNARO", 7, 0, 92);
+    render_chars("FABRICIO", 8, 0, 78);
     render_chars("JOSEFINA", 8, 0, 99);
 }
 
 /**
  * @brief Mostrar pantalla de información.
  */
-void show_info_screen() {
+void show_info_screen(void) {
     current_screen = INFO;
     clean_range(0, 3, 0, 127);
 
@@ -482,7 +482,7 @@ void next_game_state(void) {
  * @brief Generar siguiente paso de la secuencia con una determinada cantidad de flechas al mismo tiempo en la misma altura. Dibuja las flechas generadas.
  * Usa el modo de generación de secuencias global.
  */
-void generate_arrows() {
+void generate_arrows(void) {
     uint8_t column_number, column_number2;
 
     column_number = rand() & 0b11;

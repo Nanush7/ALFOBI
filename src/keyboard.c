@@ -14,14 +14,14 @@ keys_t pressed_keys = {0};
 /**
  * @brief Habilita interrupciones de GPIO.
  */
-void enable_interrupt_gpio() {
+void enable_interrupt_gpio(void) {
     P2IE |= ROWS;
 }
 
 /**
  * @brief Deshabilita interrupciones de GPIO.
  */
-void disable_interrupt_gpio() {
+void disable_interrupt_gpio(void) {
     P2IE &= ~ROWS;
 }
 
@@ -105,4 +105,5 @@ __interrupt void teclado_isr(void) {
     /* No queremos que interrumpa más de una vez mientras se espera por el rebote. */
     disable_interrupt_gpio();
     enable_timer_A1();
+    __low_power_mode_off_on_exit();
 }
