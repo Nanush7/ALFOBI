@@ -3,6 +3,7 @@
 #include "assert_test.h"
 #include "intrinsics.h"
 
+/** Puntero a segmento ALFOBI_SCORES en FLASH. */
 scores_t* flash_score = (scores_t*)0xC000;
 
 void init_flash(void) {

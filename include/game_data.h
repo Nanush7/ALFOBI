@@ -1,3 +1,7 @@
+/**
+ * @file game_data.h
+ * @brief Módulo para manejo de configuración y estado del juego.
+ */
 #ifndef GAME_DATA_H
 #define GAME_DATA_H
 
@@ -5,11 +9,11 @@
 
 /* Juego */
 #define INIT_LIVES                       5
-#define VERTICAL_ARROW_SPACING           8 /* Espacio mínimo en pixeles entre dos flechas (de todas las columnas). */
+#define VERTICAL_ARROW_SPACING           8 /**< Espacio vertical mínimo (en pixeles) entre dos flechas (de todas las columnas). */
 #define MAX_ARROW_COUNT_PER_COLUMN       6
 #define PROBABILITY_ARRAY_SIZE           16
 #define MAX_LEVEL                        8
-#define SCORE_ARRAY_LENGTH               9 /* Si se aumenta por encima de 9, hace falta cambiar la lógica. */
+#define SCORE_ARRAY_LENGTH               9 /**< Si se aumenta por encima de 9, es necesario cambiar la lógica. */
 #define PRESS_TOLERANCE                  4
 
 /* GUI */
@@ -24,6 +28,7 @@
 #define LEFT_RIGHT_ARROW_SIZE            7
 #define UP_DOWN_ARROW_SIZE               4
 
+/** Posibles modos de generación de secuencias. */
 typedef enum {
     NONE,
     SINGLE,
@@ -40,23 +45,26 @@ extern const uint8_t template_left_outline[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_right_outline[LEFT_RIGHT_ARROW_SIZE];
 extern const uint8_t template_up_outline[UP_DOWN_ARROW_SIZE];
 extern const uint8_t template_down_outline[UP_DOWN_ARROW_SIZE];
+
+/** Fuente 5x3 de caracteres (entre '!' y 'Z') alineados a la derecha en el byte. */
 extern const uint8_t numbers_5x3[58][5];
 
-/* Arreglos probabilísticos de selección de estados, por nivel. */
+/** Arreglos probabilísticos de selección de estados, por nivel. */
 extern const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE];
 
-/* Pasos de secuencia para pasar de nivel. */
+/** Cantidad de flechas generadas por nivel para pasar al siguiente nivel. */
 extern const int16_t sequence_iterations_per_level[MAX_LEVEL];
 
-/* Velocidades por nivel */
-/* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
+/** Velocidades por nivel. Es la cantidad de veces que se debe llamar @c lower_arrows para que se bajen las flechas. */
 extern const uint8_t speed_per_level[MAX_LEVEL];
 
+/** Representación de scoreboard como arreglo con tope. */
 typedef struct {
     uint16_t array[SCORE_ARRAY_LENGTH];
     uint16_t tail;
 } scores_t;
 
+/** Posibles direcciones de las flechas. */
 typedef enum {
     RIGHT = 0,
     DOWN  = 1,
@@ -64,11 +72,15 @@ typedef enum {
     LEFT  = 3,
 } arrow_direction_t;
 
+/** Flecha específica. */
 typedef struct {
+    /** Altura actual de la flecha. */
     uint8_t height; 
+    /** 1 si debe ser tenida en cuenta por la lógica o 0 en caso contrario. */
     uint8_t active;
 } arrow_t;
 
+/** Datos globales para cada tipo de flecha. Contiene el arreglo de flechas de la columna correspondiente. */
 typedef struct {
     const arrow_direction_t arrow_direction;
     const uint8_t template_size;
@@ -77,16 +89,17 @@ typedef struct {
     arrow_t arrows[MAX_ARROW_COUNT_PER_COLUMN];
 } global_arrow_data_t;
 
+/** Arreglo con tope genérico. */
 typedef struct {
     const uint8_t* array;
     uint8_t size;
 } sized_array_t;
 
 /**
- * @brief Obtener template del contorno la flecha y su tamaño según su dirección.
+ * @brief Obtener template del contorno de la flecha y su tamaño según su dirección.
  *
  * @param  direction La direccion de la flecha correspondiente.
- * @return Estructura del tipo sized_array_t
+ * @return Arreglo con tope que contiene los bytes del contorno.
  */
 sized_array_t get_template_outline(arrow_direction_t direction);
 
@@ -94,7 +107,7 @@ sized_array_t get_template_outline(arrow_direction_t direction);
  * @brief Obtener template de la flecha y su tamaño según su dirección.
  *
  * @param  direction La direccion de la flecha correspondiente.
- * @return Estructura del tipo sized_array_t.
+ * @return Arreglo con tope que contiene los bytes de la flecha.
  */
 sized_array_t get_template(arrow_direction_t direction);
 

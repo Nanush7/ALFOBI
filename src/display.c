@@ -7,8 +7,7 @@
 #define CONTROL_DATA         0xC0
 #define CONTROL_COMMAND      0x80
 
-#define SCOREBOARD_END       23
-
+/** Comandos SSD1306. */
 typedef enum SSD1306_command {
     SET_CONTRAST            = 0x81,
     DISPLAY_ALL_ON_RESUME   = 0xA4,
@@ -44,7 +43,7 @@ typedef enum SSD1306_command {
  * @brief Enviar comando al display.
  * Envía un byte CONTROL_COMMAND y un byte de comando. Procedimiento privado.
  *
- * @param command el comando a enviar.
+ * @param command El comando a enviar.
  */
 void command(uint8_t command) {
     uint8_t com[2];
@@ -60,26 +59,20 @@ void write_data(uint8_t data) {
     send_message(com);
 }
 
-/**
- * @brief Inicializa el display OLED SSD1306.
- * Esta función envía la secuencia de comandos necesaria para inicializar
- * el SSD1306.
- */
 void init_display(void) {
-    // SSD1306 init sequence.
     command(DISPLAY_OFF);
 
     command(SET_DISPLAY_CLOCK_DIV);
-    command(0x80);                                 // the suggested ratio 0x80
+    command(0x80);
 
     command(SET_MULTIPLEX);
     command(LCDHEIGHT - 1);
 
     command(SET_DISPLAY_OFFSET);
-    command(0x0);                                  /* Sin offset */
-    command(SET_START_LINE);                       // line #0
+    command(0x0);
+    command(SET_START_LINE);
     command(CHARGE_PUMP);
-    command(0x14);                                 // generate high voltage from 3.3v line internally'
+    command(0x14);
 
     command(MEMORY_MODE);
     command(HORIZONTAL_ADDR_MODE);
@@ -106,16 +99,6 @@ void init_display(void) {
     command(DEACTIVATE_SCROLL);
 
     command(DISPLAY_ON);
-}
-
-void clear_area(uint8_t page_start, uint8_t column_start) {
-    set_cursor_position(page_start, column_start);
-
-    for (uint8_t page = 4 - page_start; page_start; page--) {
-        for (uint8_t column = 128 - column_start; column; column--) {
-            write_data(0);
-        }
-    }
 }
 
 void set_cursor_position(uint8_t page_start, uint8_t column_start) {

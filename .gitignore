@@ -20,6 +20,7 @@ Release/
 doxygen/html/
 *.lnk
 CMakeLists.txt
+docs/html/
 
 *.exe
 *.out

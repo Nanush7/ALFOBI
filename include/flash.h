@@ -1,3 +1,7 @@
+/**
+ * @file flash.h
+ * @brief Módulo para leer y escribir memoria FLASH.
+ */
 #ifndef FLASH_H
 #define FLASH_H
 #include <game_data.h>
@@ -18,7 +22,7 @@ void get_flash_scores(scores_t* res);
  * @brief Guardar scores en flash.
  *
  * @param scores Puntero a los scores.
- * @note Se desactivan las interrupciones. Además, el proceso de escritura es lento.
+ * @note Se desactivan las interrupciones. El proceso de escritura es lento.
  */
 void store_scores_to_flash(scores_t* scores);
 

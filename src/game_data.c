@@ -69,7 +69,6 @@ const uint8_t template_down_outline[UP_DOWN_ARROW_SIZE] = {
     0b00001000
 };
 
-/* Números 5x3 alineados a la derecha en el byte. */
 const uint8_t numbers_5x3[58][5] = {
     {0b010, 0b010, 0b010, 0b000, 0b010}, /* ! */
     {0b101, 0b101, 0b000, 0b000, 0b000}, /* " */
@@ -131,7 +130,6 @@ const uint8_t numbers_5x3[58][5] = {
     {0b111, 0b001, 0b010, 0b100, 0b111}, /* Z */
 };
 
-/** Arreglos probabilísticos de selección de estados, por nivel. */
 const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE] = {
     {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
     {NONE, SINGLE, SINGLE, NONE, NONE, SINGLE, NONE, NONE, SINGLE, SINGLE, SINGLE, NONE, NONE, NONE, SINGLE, SINGLE},
@@ -143,18 +141,11 @@ const sequence_mode_t state_probability_array[MAX_LEVEL][PROBABILITY_ARRAY_SIZE]
     {TRIPLE, DOUBLE, QUAD, TRIPLE, DOUBLE, DOUBLE , DOUBLE, QUAD, SINGLE, TRIPLE, QUAD, SINGLE, SINGLE, QUAD, SINGLE,TRIPLE},
 };
 
-/** Pasos de secuencia para pasar de nivel. */
 const int16_t sequence_iterations_per_level[MAX_LEVEL] = {10, 10, 15, 15, 15, 15, 25, 25};
 
-/** Velocidades por nivel */
-/* Es la cantidad de veces que se debe llamar lower_arrows para que se bajen las flechas. */
 const uint8_t speed_per_level[MAX_LEVEL] = {3, 2, 3, 2, 4, 2, 5, 2};
 
-/* @brief Obtener template del contorno la flecha y su tamaño según su dirección.
- *
- * @param  direction La direccion de la flecha correspondiente.
- * @return Estructura del tipo sized_array_t
- */
+
 sized_array_t get_template_outline(arrow_direction_t direction) {
     sized_array_t res;
 
@@ -183,12 +174,6 @@ sized_array_t get_template_outline(arrow_direction_t direction) {
     return res;
 }
 
-/**
- * @brief Obtener template de la flecha y su tamaño según su dirección.
- *
- * @param  direction La direccion de la flecha correspondiente.
- * @return Estructura del tipo sized_array_t.
- */
 sized_array_t get_template(arrow_direction_t direction) {
     sized_array_t res;
 

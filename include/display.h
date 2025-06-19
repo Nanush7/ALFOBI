@@ -1,23 +1,21 @@
+/**
+ * @file display.h
+ * @brief Módulo para comunicación con display SSD1306.
+ */
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
 #include <stdint.h>
 
 /**
- * @brief Inicializar display SSD1306 y apagar/borrar todos los pixeles.
+ * @brief Inicializa el display OLED SSD1306.
+ * Esta función envía la secuencia de comandos necesaria para inicializar
+ * el SSD1306.
  */
 void init_display(void);
 
 /**
- * @brief Limpiar el display en el área comprendida entre el page_start, el column_start y el fin del display.
- *
- * @param page_start Desde qué página comenzar a limpiar.
- * @param column_start Desde qué columna comenzar a limpiar.
- */
-void clear_area(uint8_t page_start, uint8_t column_start);
-
-/**
- * @brief Mover el puntero a la página y columna especificados. Procedimiento privado.
+ * @brief Mover cursor del display a la página y columna especificados.
  *
  * @param page_start   La página seleccionada.
  * @param column_start La columna seleccionada.
@@ -27,9 +25,10 @@ void clear_area(uint8_t page_start, uint8_t column_start);
 void set_cursor_position(uint8_t page_start, uint8_t column_start);
 
 /**
- * @brief Escribir el dato en el display 
+ * @brief Enviar dato al display.
+ * Envía un byte CONTROL_DATA y un byte de data.
  *
- * @param data valor a ser escrito en el display.
+ * @param data Valor a enviar.
 */
 void write_data(uint8_t data);
 

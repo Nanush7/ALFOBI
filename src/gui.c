@@ -11,11 +11,12 @@
  * @brief Combinar bytes de elementos que se solapan en el display.
  * Dado un byte y una posición donde se dibujará,
  * retorna el byte resultante de combinarlo con los elementos estáticos en dicha posición.
+ * Usado para mostrar flechas pasando sobre los contornos.
  *
  * @param byte       El byte inicial a dibujar.
  * @param arrow_data Datos según el tipo de flecha.
  * @param height     Columna del display donde se dibujará el byte.
- * @return El byte final (combinado) a escribir.
+ * @return El byte final (mezcla de @c byte y los elementos estáticos que correspondan según los otros parámetros).
  */
 uint8_t combine_with_static_elements(uint8_t byte, global_arrow_data_t* arrow_data, uint8_t height) {
 
@@ -32,17 +33,14 @@ uint8_t combine_with_static_elements(uint8_t byte, global_arrow_data_t* arrow_da
 /**
  * @brief Calcula el rango del template a renderizar.
  * Como las flechas pueden estar por arriba/abajo del área visible,
- * necesitamos saber qué partes de la flecha estarán visibles. Procedimiento privado.
+ * necesitamos saber qué partes de la flecha estarán visibles.
+ * Las flechas empiezan a aparecer en la altura HORIZONTAL_SEPARATOR_POSITION + 1 y empiezan a desaparecer en la altura 127.
  *
  * @param  arrow_data Datos globales de la flecha correspondiente.
  * @param  height     La altura actual de la flecha.
  * @return El primer y último índice a renderizar del template de la flecha.
  */
 template_range_t get_template_range(global_arrow_data_t* arrow_data, uint8_t height) {
-    /*
-     * Las flechas empiezan a aparecer en la altura HORIZONTAL_SEPARATOR_POSITION + 1.
-     * y empiezan a desaparecer en la altura 127.
-     */
 
     template_range_t res;
 
