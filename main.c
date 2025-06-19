@@ -52,7 +52,12 @@ int main() {
             callback();
         }
 
-        __bis_SR_register(LPM3_bits + GIE);
+        __disable_interrupt();
+        if (queue_is_empty()) {
+            __bis_SR_register(LPM3_bits + GIE);
+        } else {
+            __enable_interrupt();
+        }
     }
     return 0;
 }
