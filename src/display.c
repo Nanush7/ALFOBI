@@ -1,5 +1,6 @@
 #include "display.h"
 #include "i2c.h"
+#include "msg_queue.h"
 
 #define LCDWIDTH             128
 #define LCDHEIGHT            32
@@ -47,16 +48,16 @@ typedef enum SSD1306_command {
  * @param command el comando a enviar.
  */
 void command(uint8_t command) {
-    uint8_t com[2];
-    com[0] = CONTROL_COMMAND;
-    com[1] = command;
+    i2c_msg_t com;
+    com.control_byte = CONTROL_COMMAND;
+    com.data         = command;
     send_message(com);
 }
 
 void write_data(uint8_t data) {
-    uint8_t com[2];
-    com[0] = CONTROL_DATA;
-    com[1] = data;
+    i2c_msg_t com;
+    com.control_byte = CONTROL_DATA;
+    com.data         = data;
     send_message(com);
 }
 

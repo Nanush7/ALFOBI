@@ -1,17 +1,23 @@
+#include "msg_queue.h"
 #include "msp430g2553.h"
 #include <i2c.h>
 #include <msp430.h>
 #include <assert_test.h>
-#include "msg_queue.h"
 #include "intrinsics.h"
 #include <stdint.h>
 
+#define CONTROL_DATA 0xC0
+
 uint8_t first_sent;
+uint8_t sending_data;
+uint8_t control_sent;
 
 void init_i2c(uint8_t slave_addr) {
     init_msg_queue();
 
-    first_sent = 0;
+    first_sent   = 0;
+    sending_data = 0;
+    control_sent = 0;
 
     /* Configuramos los pines. P1.6 como canal de clock y P1.7 como canal de data. */
     P1SEL  |= BIT6 | BIT7;
@@ -20,21 +26,15 @@ void init_i2c(uint8_t slave_addr) {
     /* Pausamos la USCI. */
     UCB0CTL1 |= UCSWRST;
 
-    /* FIXME: Está raro que esto ande sin poner ningún divisor porque DCO ya debería estar a 4.25MHz. */
     /* Se usa DCO como fuente de SMCLK por defecto */
-    /* Configuramos DCO con una frecuencia típica de 0.30MHz */
-    /* DCO = 3, RSEL = 3, MOD = 0 */
-    /* BCSCTL1 |= RSEL1 | RSEL2; */
-    /** TODO: Ver si podemos usar más de 100kHz. Tendríamos que cambiar la config del display también.
-    DCOCTL  |= DCO1  | DCO2; */
-
     /* Configuramos la USCI_B: */
     /* Modo master + modo I2C + comunicación sincronizada. */
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;
 
-    /* Seleccionamos SMCLK como fuente para la USCI a 100kHz */
+    /* Seleccionamos SMCLK como fuente para la USCI. */
+    /* DCO está a ~14 MHz, dividimos entre 35 para llegar a ~400 kHz. */
     UCB0CTL1 |= UCSSEL_2;
-    UCB0BR0 = 12;
+    UCB0BR0 = 35;
     UCB0BR1 = 0;
 
     /* Guardamos la dirección del esclavo. */
@@ -47,13 +47,16 @@ void init_i2c(uint8_t slave_addr) {
     IE2 |= UCB0TXIE;
 }
 
-void send_message(uint8_t message[2]) {
+void send_message(i2c_msg_t message) {
+    /* Descartamos mensaje si la cola está llena. */
+    if (msg_queue_is_full())
+        return;
+
     /* Protegemos la cola de mensajes, ya que es un dato compartido con la ISR de transmisión. */
     __disable_interrupt();
     uint8_t was_queue_empty = msg_queue_is_empty();
 
-    add_to_msg_queue(message[0]);
-    add_to_msg_queue(message[1]);
+    add_to_msg_queue(message);
     if (!was_queue_empty) {
         __enable_interrupt();
         return;
@@ -72,20 +75,44 @@ void send_message(uint8_t message[2]) {
 __interrupt void FREE_TX_BUFFER(void) {
     /* Si no tenemos más mensajes para enviar, desactivamos estas interrupciones. */
     if (msg_queue_is_empty()) {
-        first_sent = 0;
+        reset_i2c:
+        first_sent   = 0;
+        sending_data = 0;
+        control_sent = 0;
         IFG2 &= ~UCB0TXIFG;
         UCB0CTL1 |= UCTXSTP;
         return;
     }
 
-    if (first_sent) {
+    if (first_sent && !control_sent) {
         dequeue_from_msg_queue();
     } else {
         first_sent = 1;
     }
 
-    if (!msg_queue_is_empty()) {
-        UCB0TXBUF = next_from_msg_queue();
+    if (msg_queue_is_empty())
+        goto reset_i2c;
+
+    i2c_msg_t next_msg = next_from_msg_queue();
+    if (sending_data && next_msg.control_byte != CONTROL_DATA) {
+        first_sent   = 0;
+        sending_data = 0;
+        control_sent = 0;
+        UCB0CTL1 |= UCTR | UCTXSTT;
+        return;
+    }
+
+    if (control_sent || sending_data) {
+        control_sent = 0;
+        UCB0TXBUF = next_msg.data;
+    } else {
+        control_sent = 1;
+        uint8_t continuation_bit = sending_data ? 0x80: 0x00;
+        UCB0TXBUF = next_msg.control_byte | continuation_bit;
+    }
+
+    if (next_msg.control_byte == CONTROL_DATA) {
+        sending_data = 1;
     }
 }
 
@@ -93,11 +120,11 @@ __interrupt void FREE_TX_BUFFER(void) {
 __interrupt void NACK_ISR(void) {
     ASSERT(UCB0STAT & UCNACKIFG);
 
-    IFG2 &= ~UCB0TXIFG;
-    first_sent = 0;
+    first_sent   = 0;
+    sending_data = 0;
+    control_sent = 0;
     while (UCB0CTL1 & UCTXSTP);
     /* Mandamos Restart. */
+    IFG2 &= ~UCB0TXIFG;
     UCB0CTL1 |= UCTR | UCTXSTT;
-
-    /** TODO: No parece funcionar esta ISR, testear. */
 }

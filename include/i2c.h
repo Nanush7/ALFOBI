@@ -6,6 +6,7 @@
 #define I2C_H
 
 #include <stdint.h>
+#include "msg_queue.h"
 
  /**
   * @brief Configurar la USCI_B en modo I2C.
@@ -20,7 +21,7 @@ void init_i2c(uint8_t slave_address);
  *
  * @param message Arreglo con tipo de mensaje (comando, datos) en la primera posición y datos en la segunda.
  */
-void send_message(uint8_t message[2]);
+void send_message(i2c_msg_t message);
 
 
 #endif /* I2C_H */

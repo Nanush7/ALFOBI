@@ -2,7 +2,7 @@
 #include "assert_test.h"
 
 /** Cola circular de mensajes */
-uint8_t msg_queue[MSG_QUEUE_SIZE];
+i2c_msg_t msg_queue[MSG_QUEUE_SIZE];
 /** Primer elemento de la cola. */
 uint8_t msg_head;
 /** Próximo elemento a agregar en la cola. */
@@ -13,7 +13,7 @@ void init_msg_queue(void) {
     msg_tail = 0;
 }
 
-void add_to_msg_queue(uint8_t msg) {
+void add_to_msg_queue(i2c_msg_t msg) {
     ASSERT(!msg_queue_is_full());
 
     msg_queue[msg_tail] = msg;
@@ -39,7 +39,7 @@ void dequeue_from_msg_queue(void) {
         msg_head = 0;
 }
 
-uint8_t next_from_msg_queue(void) {
+i2c_msg_t next_from_msg_queue(void) {
     ASSERT(!msg_queue_is_empty());
 
     return msg_queue[msg_head];

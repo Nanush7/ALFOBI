@@ -131,9 +131,9 @@ void main_menu(void) {
         render_arrow(all_global_arrow_data[i], 59, 0);
     }
 
-    render_chars("RICARDO", 7, 0, 85);
-    render_chars("GENNARO", 7, 0, 92);
-    render_chars("FABRICIO", 8, 0, 78);
+    render_chars("RICARDO", 7, 0, 75);
+    render_chars("GENNARO", 7, 0, 85);
+    render_chars("FABRICIO", 8, 0, 92);
     render_chars("JOSEFINA", 8, 0, 99);
 }
 

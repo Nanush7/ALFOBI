@@ -1,3 +1,4 @@
+#include "func_queue.h"
 #include <msp430.h>
 #include <timer.h>
 #include <timer_hw.h>
@@ -69,5 +70,7 @@ __interrupt void Timer0_A0_ISR(void) {
 __interrupt void Timer1_A0_ISR(void) {
     disable_timer_A1();
     ASSERT(callback_timer_A1); /* Si Timer_A1 está prendido, el callback no puede ser NULL. */
-    add_to_queue(callback_timer_A1);
+    /* Descartamos si la cola está llena. */
+    if (!queue_is_full())
+        add_to_queue(callback_timer_A1);
 }

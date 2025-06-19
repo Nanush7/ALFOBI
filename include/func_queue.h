@@ -8,7 +8,7 @@
 #include <stdint.h>
 
  /** Cantidad máxima de funciones que pueden haber en la cola. */
-#define QUEUE_SIZE 15
+#define QUEUE_SIZE 20
 
 typedef void (func)(void);
 

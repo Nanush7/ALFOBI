@@ -30,8 +30,11 @@ uint8_t increment_counters(void) {
 
         if (!--timer->counter) {
             timer->counter = timer->target;
-            add_to_queue(timer->callback);
-            res = 1;
+            /* Descartamos si la cola está llena. */
+            if (!queue_is_full()) {
+                add_to_queue(timer->callback);
+                res = 1;
+            }
         }
 
         timer++;
