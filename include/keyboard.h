@@ -27,24 +27,23 @@ typedef struct {
     uint8_t d:     1;
 } keys_t;
 
-/** TODO: Acomodar Doxygen.
- * @brief Se configura el teclado para la correcta recepción de botones.
- * Se establecen los pines correspondientes a las columnas como output y a los de las filas como input con resistencia de pull up. Se habilitan las interrupciones de estas últimas.
+/**
+ * @brief Inicializar teclado matricial.
+ * Inicializa puertos e interrupciones de GPIO.
  */
-
 void init_keyboard(void);
 
 /**
- * @brief Obtiene las teclas presionadas desde la última consulta.
+ * @brief Obtener las teclas presionadas desde la última consulta.
  *
- * @return Struct que contiene las teclas presionadas en 1.
- *
- * @note Se borran los botones seleccionados al ejecutarla.
+ * @returns Struct donde las teclas presionadas están en 1.
+ * @note Todas las teclas pasan a 0 luego de ejecutar esta función.
  */
 keys_t get_pressed_keys(void);
 
 /**
- * @brief Chequear y guarda los botones presionados.
+ * @brief Chequear y guardar las teclas presionadas.
+ * Las teclas presionadas se mantienen hasta que se ejecuta @c get_pressed_keys().
  */
 void handle_keypress(void);
 

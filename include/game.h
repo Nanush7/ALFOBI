@@ -68,8 +68,12 @@ void decrement_counter(gui_counter_t* counter, uint8_t value);
  */
 void game_tick(void);
 
-/** TODO: doxygen */
+/**
+ * @brief Inicializar tabla de scores.
+ * Se usa para setear el scoreboard leído de la FLASH desde main.
+ *
+ * @param scores_param Puntero al struct de scores.
+ */
 void set_scores(scores_t* scores_param);
-
 
 #endif /* GAME_H */

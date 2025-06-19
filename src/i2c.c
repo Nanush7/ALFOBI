@@ -20,19 +20,15 @@ void init_i2c(uint8_t slave_addr) {
     /* Pausamos la USCI. */
     UCB0CTL1 |= UCSWRST;
 
-    /* FIXME: Está raro que esto ande sin poner ningún divisor porque DCO ya debería estar a 4.25MHz. */
     /* Se usa DCO como fuente de SMCLK por defecto */
-    /* Configuramos DCO con una frecuencia típica de 0.30MHz */
-    /* DCO = 3, RSEL = 3, MOD = 0 */
-    /* BCSCTL1 |= RSEL1 | RSEL2; */
-    /** TODO: Ver si podemos usar más de 100kHz. Tendríamos que cambiar la config del display también.
-    DCOCTL  |= DCO1  | DCO2; */
 
     /* Configuramos la USCI_B: */
     /* Modo master + modo I2C + comunicación sincronizada. */
     UCB0CTL0 = UCMST | UCMODE_3 | UCSYNC;
 
-    /* Seleccionamos SMCLK como fuente para la USCI a 100kHz */
+    /* Seleccionamos SMCLK como fuente para la USCI a 1 MHz (SMCLK a ~14 MHz / 12). */
+    /* Si se quiere reducir la frecuencia de I2C, se debe cambiar la inicialización del display para */
+    /* adaptarlo a la nueva frecuencia. */
     UCB0CTL1 |= UCSSEL_2;
     UCB0BR0 = 12;
     UCB0BR1 = 0;
@@ -93,11 +89,8 @@ __interrupt void FREE_TX_BUFFER(void) {
 __interrupt void NACK_ISR(void) {
     ASSERT(UCB0STAT & UCNACKIFG);
 
-    IFG2 &= ~UCB0TXIFG;
     first_sent = 0;
     while (UCB0CTL1 & UCTXSTP);
     /* Mandamos Restart. */
     UCB0CTL1 |= UCTR | UCTXSTT;
-
-    /** TODO: No parece funcionar esta ISR, testear. */
 }
