@@ -1,8 +1,10 @@
 /**
- * @file i2c.h
- * @brief Módulo para transmisión I2C.
+ * @defgroup i2c
+ * Módulo para transmisión I2C.
  * Se implementa un master transmitter con slave adresses de 7 bits y SMCLK como señal de clock.
  * solo se permite un slave fijo. Se utiliza el módulo @c msg_queue.h para la cola de mensajes a enviar.
+ * @{
+ * @file i2c.h
  */
 #ifndef I2C_H
 #define I2C_H
@@ -26,3 +28,5 @@ void send_message(uint8_t message[2]);
 
 
 #endif /* I2C_H */
+
+/** @} */

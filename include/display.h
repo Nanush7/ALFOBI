@@ -1,6 +1,8 @@
 /**
+ * @defgroup display
+ * Módulo para comunicación con display SSD1306.
+ * @{
  * @file display.h
- * @brief Módulo para comunicación con display SSD1306.
  */
 #ifndef DISPLAY_H
 #define DISPLAY_H
@@ -33,3 +35,5 @@ void set_cursor_position(uint8_t page_start, uint8_t column_start);
 void write_data(uint8_t data);
 
 #endif /* DISPLAY_H */
+
+/** @} */

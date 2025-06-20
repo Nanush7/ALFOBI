@@ -1,3 +1,8 @@
+/**
+ * @addtogroup i2c
+ * @{
+ * @file i2c.c
+ */
 #include "msp430g2553.h"
 #include <i2c.h>
 #include <msp430.h>
@@ -95,3 +100,5 @@ __interrupt void NACK_ISR(void) {
     /* Mandamos Restart. */
     UCB0CTL1 |= UCTR | UCTXSTT;
 }
+
+/** @} */

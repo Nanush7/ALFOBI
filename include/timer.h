@@ -1,10 +1,9 @@
 /**
  * @defgroup timer
+ * Proporciona funciones y una estructura para gestionar timers lógicos con distintos targets y callbacks.
  * @{
  * @file timer.h
- * @brief Proporciona funciones y una estructura para gestionar timers lógicos con distintos targets y callbacks.
  */
-
 #ifndef TIMER_H
 #define TIMER_H
 

@@ -1,3 +1,8 @@
+/**
+ * @addtogroup msg_queue
+ * @{
+ * @file msg_queue.c
+ */
 #include "msg_queue.h"
 #include "assert_test.h"
 
@@ -44,3 +49,5 @@ uint8_t next_from_msg_queue(void) {
 
     return msg_queue[msg_head];
 }
+
+/** @} */

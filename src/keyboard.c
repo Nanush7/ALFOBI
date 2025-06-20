@@ -1,3 +1,8 @@
+/**
+ * @addtogroup keyboard
+ * @{
+ * @file keyboard.c
+ */
 #include <keyboard.h>
 #include <assert_test.h>
 #include <msp430.h>
@@ -107,3 +112,5 @@ __interrupt void teclado_isr(void) {
     enable_timer_A1();
     __low_power_mode_off_on_exit();
 }
+
+/** @} */

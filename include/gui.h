@@ -1,6 +1,8 @@
 /**
+ * @defgroup gui
+ * Módulo para mostrar elementos de la interfaz en pantalla, a través del módulo display.
+ * @{
  * @file gui.h
- * @brief Módulo para mostrar elementos en pantalla.
  */
 #ifndef GUI_H
 #define GUI_H
@@ -79,3 +81,5 @@ void clean_arrow(global_arrow_data_t* arrow_data, uint8_t height, uint8_t fast_c
 void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y);
 
 #endif /* GUI_H */
+
+/** @} */

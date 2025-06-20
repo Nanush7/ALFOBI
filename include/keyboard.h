@@ -1,6 +1,8 @@
 /**
+ * @defgroup keyboard
+ * Módulo de configuracion y uso del teclado GPIO.
+ * @{
  * @file keyboard.h
- * @brief Módulo de configuracion y uso del teclado GPIO.
  */
 #ifndef KEYBOARD_H
 #define KEYBOARD_H
@@ -49,3 +51,5 @@ keys_t get_pressed_keys(void);
 void handle_keypress(void);
 
 #endif /* KEYBOARD_H */
+
+/** @} */

@@ -1,3 +1,8 @@
+/**
+ * @addtogroup flash
+ * @{
+ * @file flash.c
+ */
 #include "flash.h"
 #include <msp430.h>
 #include "assert_test.h"
@@ -48,3 +53,5 @@ void store_scores_to_flash(scores_t* scores) {
     __enable_interrupt();
     P1OUT &= ~BIT0;
 }
+
+/** @} */

@@ -1,3 +1,8 @@
+/**
+ * @addtogroup func_queue
+ * @{
+ * @file func_queue.c
+ */
 #include <stdint.h>
 #include <func_queue.h>
 #include <assert_test.h>
@@ -43,3 +48,5 @@ func* dequeue_from_queue(void) {
 
     return res;
 }
+
+/** @} */

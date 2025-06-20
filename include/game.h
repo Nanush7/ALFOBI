@@ -1,5 +1,6 @@
 /**
  * @defgroup Game
+ * Lógica del juego e integración con módulo de teclado, display y gui.
  * @{
  * @file game.h
  */

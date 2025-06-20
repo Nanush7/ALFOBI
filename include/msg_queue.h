@@ -1,7 +1,8 @@
 /**
+ * @defgroup msg_queue
+ * Módulo de cola circular de mensajes.
+ * @{
  * @file msg_queue.h 
- *
- * @brief Módulo de cola circular de mensajes.
  */
 #ifndef MSG_QUEUE_H
 #define MSG_QUEUE_H
@@ -53,3 +54,5 @@ void dequeue_from_msg_queue(void);
 uint8_t next_from_msg_queue(void);
 
 #endif /* MSG_QUEUE_H */
+
+/** @} */

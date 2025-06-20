@@ -1,3 +1,8 @@
+/**
+ * @addtogroup display
+ * @{
+ * @file display.c
+ */
 #include "display.h"
 #include "i2c.h"
 
@@ -110,3 +115,5 @@ void set_cursor_position(uint8_t page_start, uint8_t column_start) {
     command(column_start);
     command(127);
 }
+
+/** @} */

@@ -1,5 +1,8 @@
-#ifndef _ASSERT_TEST_H_
-#define _ASSERT_TEST_H_
+/**
+ * @file assert_test.h
+ */
+#ifndef ASSERT_TEST_H
+#define ASSERT_TEST_H
 
 #define DEBUG
 #ifdef DEBUG
@@ -18,4 +21,4 @@
 #define ASSERT(expr)
 #endif /* DEBUG */
 
-#endif /* _ASSERT_TEST_H_ */
+#endif /* ASSERT_TEST_H */

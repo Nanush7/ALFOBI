@@ -1,8 +1,8 @@
 /**
  * @addtogroup Game
+ * Módulo para manejo de configuración y estado del juego.
  * @{
  * @file game_data.h
- * @brief Módulo para manejo de configuración y estado del juego.
  */
 #ifndef GAME_DATA_H
 #define GAME_DATA_H

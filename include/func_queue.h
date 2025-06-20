@@ -1,6 +1,8 @@
 /**
+ * @defgroup func_queue
+ * Módulo de cola circular de funciones.
+ * @{
  * @file func_queue.h
- * @brief Módulo de cola circular de funciones.
  */
 #ifndef FUNC_QUEUE_H
 #define FUNC_QUEUE_H
@@ -50,3 +52,5 @@ uint8_t queue_is_full(void);
 func* dequeue_from_queue(void);
 
 #endif /* FUNC_QUEUE_H */
+
+/** @} */

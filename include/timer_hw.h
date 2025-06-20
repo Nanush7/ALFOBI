@@ -1,13 +1,11 @@
 /**
  * @defgroup timer_hw
- * @{
- * @file timer_hw.h
- * @brief Definiciones y declaraciones para el módulo de timer por hardware.
- *
+ * Definiciones y declaraciones para el módulo de timer por hardware.
  * Este archivo contiene las declaraciones de las funciones utilizadas para
  * configurar e inicializar los timers por hardware.
+ * @{
+ * @file timer_hw.h
  */
-
 #ifndef TIMER_HW_H
 #define TIMER_HW_H
 

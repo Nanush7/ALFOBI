@@ -1,3 +1,6 @@
+/**
+ * @file string_utils.c
+ */
 #include "string_utils.h"
 
 void alfobi_itoa(uint16_t value, uint8_t* str_buff, uint8_t digit_amount) {

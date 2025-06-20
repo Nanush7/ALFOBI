@@ -1,3 +1,8 @@
+/**
+ * @addtogroup gui
+ * @{
+ * @file gui.c
+ */
 #include <gui.h>
 #include <display.h>
 #include <assert_test.h>
@@ -183,3 +188,5 @@ void render_chars(uint8_t* buff, uint8_t size, uint8_t x, uint8_t y) {
         }
     }
 }
+
+/** @} */
