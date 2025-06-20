@@ -19,6 +19,14 @@ int main() {
     /* Le subimos la velocidad al DCO (usado por MCLK y SMCLK). */
     BCSCTL1 |= RSEL3 | RSEL2 | RSEL1 | RSEL0;
 
+    /* Reducimos consumo inicializando puertos. */
+    P1DIR = 0xFF;
+    P1OUT = 0x00;
+    P2DIR = 0xFF;
+    P2OUT = 0x00;
+    P3DIR = 0xFF;
+    P3OUT = 0x00;
+
     /* LED assert y write Flash. */
     P1DIR |= BIT0;
     P1OUT &= ~BIT0;

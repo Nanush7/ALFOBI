@@ -4,8 +4,8 @@
 #include <assert_test.h>
 
 #define CRYSTAL_FREQ 32768
-#define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMER_INTERRUPTS) - 1)
-#define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / 10) - 1) /* Cada 10 ms. */
+#define TA0CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMERA_INTERRUPTS) - 1)
+#define TA1CCR0_TARGET (CRYSTAL_FREQ / (1000 / MS_BETWEEN_TIMERB_INTERRUPTS) - 1) /* Cada 10 ms. */
 
 func* callback_timer_A1 = 0;
 
