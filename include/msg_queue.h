@@ -1,3 +1,8 @@
+/**
+ * @file msg_queue.h 
+ *
+ * @brief Módulo de cola circular de mensajes.
+ */
 #ifndef MSG_QUEUE_H
 #define MSG_QUEUE_H
 
@@ -6,7 +11,7 @@
 #define MSG_QUEUE_SIZE 50
 
 /**
- * @brief Inicializar cola de mensajes I2C.
+ * @brief Inicializar cola de mensajes.
  */
 void init_msg_queue(void);
 

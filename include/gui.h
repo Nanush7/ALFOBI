@@ -24,10 +24,8 @@ typedef struct {
  * Los digitos más significativos van primero en el arreglo @c digits.
  */
 typedef struct {
-    /** Cantidad de dígitos del contador. Debe coincidir con el tamaño del arreglo @c digits. */
-    const uint8_t digit_amount;
-    /** Arreglo de caracteres (un char por digito). */
-    uint8_t* digits;
+    const uint8_t digit_amount; /**< Cantidad de dígitos del contador. Debe coincidir con el tamaño del arreglo @c digits. */
+    uint8_t* digits; /**< Arreglo de caracteres (un char por digito). */
 } gui_counter_t;
 
 /**

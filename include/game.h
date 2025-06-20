@@ -1,3 +1,8 @@
+/**
+ * @defgroup Game
+ * @{
+ * @file game.h
+ */
 #ifndef GAME_H
 #define GAME_H
 
@@ -14,18 +19,19 @@ typedef enum {
 
 /**
  * @brief Muestra el menú principal.
- * Cambia estado a MAIN.
+ * Cambia estado a @c MAIN .
  */
 void main_menu(void);
 
 /**
- * @brief Inicializa los timers y el estado del juego.
+ * @brief Inicializar juego e iniciar partida.
+ * Cambia estado a @c GAME .
  */
 void init_game(void);
 
-/**r
+/**
  * @brief Bajar las flechas que corresponda.
- * Chequea si bajó la última flecha del último nivel para mostrar win.
+ * Chequea si bajó la última flecha del último nivel y llama a @c game_over() .
  */
 void lower_arrows(void);
 
@@ -47,8 +53,8 @@ void reset_counter(gui_counter_t* counter);
  *
  * @param counter El contador a modificar.
  * @param value   El valor a sumar.
- *r
- * @warning Hay overflow, pasa a cero.
+ *
+ * @warning Hay overflow. Todos los digitos pasan a cero.
  */
 void increment_counter(gui_counter_t* counter, uint8_t value);
 
@@ -57,14 +63,14 @@ void increment_counter(gui_counter_t* counter, uint8_t value);
  *
  * @param counter El contador a modificar.
  * @param value   El valor a restar.
- *r
- * @warning Hay overflow, pasa a cero.
+ *
+ * @warning Hay overflow. Todos los dígitos pasan a nueve.
  */
 void decrement_counter(gui_counter_t* counter, uint8_t value);
 
 /**
  * @brief Nuevo tick del juego.
- * Baja flechas y actualiza juego (secuencia, dificultad, etc.)
+ * Baja flechas, actualiza juego (secuencia, dificultad, etc.) y maneja pulsaciones del teclado.
  */
 void game_tick(void);
 
@@ -85,3 +91,5 @@ void set_scores(scores_t* scores_param);
 void init_game_seed(uint16_t* seed_ptr);
 
 #endif /* GAME_H */
+
+/** @} */

@@ -1,3 +1,8 @@
+/**
+ * @addtogroup Game
+ * @{
+ * @file game_data.c
+ */
 #include <game_data.h>
 #include <assert_test.h>
 
@@ -201,3 +206,5 @@ sized_array_t get_template(arrow_direction_t direction) {
 
     return res;
 }
+
+/** @} */

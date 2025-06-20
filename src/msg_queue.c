@@ -3,9 +3,9 @@
 
 /** Cola circular de mensajes */
 uint8_t msg_queue[MSG_QUEUE_SIZE];
-/** Primer elemento de la cola. */
+/** Primer elemento de la cola (siguiente a desencolar). */
 uint8_t msg_head;
-/** Próximo elemento a agregar en la cola. */
+/** Próximo elemento a agregar a la cola. */
 uint8_t msg_tail;
 
 void init_msg_queue(void) {

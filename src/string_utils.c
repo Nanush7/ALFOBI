@@ -1,7 +1,7 @@
 #include "string_utils.h"
 
 void alfobi_itoa(uint16_t value, uint8_t* str_buff, uint8_t digit_amount) {
-    /* Usamos módulo ya que esta función no se ejecuta en contextos críticos en el tiempo. */
+    /* Usamos módulo ya que esta función no se ejecuta en contextos donde el tiempo sea crítico. */
     uint8_t i = digit_amount;
     do {
         i--;

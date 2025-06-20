@@ -1,3 +1,8 @@
+/**
+ * @addtogroup timer_hw
+ * @{
+ * @file timer_hw.c
+ */
 #include <msp430.h>
 #include <timer.h>
 #include <timer_hw.h>
@@ -54,20 +59,29 @@ void enable_timer_A1(void) {
     TA1CCTL0 |= CCIE;
 }
 
+/**
+ * @brief Deshabilitar Timer A1.
+ *
+ * @note Timer A1 se deshabilita en la ISR @c Timer1_A0_ISR .
+ */
 void disable_timer_A1(void) {
     TA1CTL   &= ~MC_3;
     TA1CCTL0 &= ~CCIE;
 }
 
+/** ISR para Timer A0. */
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void Timer0_A0_ISR(void) {
     if (increment_counters())
         __low_power_mode_off_on_exit();
 }
 
+/** ISR para Timer A1. */
 #pragma vector=TIMER1_A0_VECTOR
 __interrupt void Timer1_A0_ISR(void) {
     disable_timer_A1();
     ASSERT(callback_timer_A1); /* Si Timer_A1 está prendido, el callback no puede ser NULL. */
     add_to_queue(callback_timer_A1);
 }
+
+/** @} */

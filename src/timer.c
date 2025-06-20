@@ -1,12 +1,17 @@
+/**
+ * @addtogroup timer
+ * @{
+ * @file timer.c
+ */
 #include <timer.h>
 #include <timer_hw.h>
 #include <msp430.h>
 #include <func_queue.h>
 #include <assert_test.h>
 
-#define MAX_TIMERS_AMOUNT 5
-
+/** Arreglo de timers registrados. */
 timer_t timers[MAX_TIMERS_AMOUNT];
+/** Tope del arreglo de timers. */
 uint8_t timers_tail = 0;
 
 void add_timer(timer_t timer) {
@@ -39,3 +44,5 @@ uint8_t increment_counters(void) {
 
     return res;
 }
+
+/** @} */

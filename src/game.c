@@ -1,3 +1,8 @@
+/**
+ * @addtogroup Game
+ * @{
+ * @file game.c
+ */
 #include "gui.h"
 #include <game.h>
 #include <game_data.h>
@@ -28,7 +33,7 @@ global_arrow_data_t left_arrow_data = {
     LEFT, LEFT_RIGHT_ARROW_SIZE, LEFT_OUTLINE_HEIGHT, STARTING_ARROW_HEIGHT_LEFT_RIGHT, {}
 };
 
-/* Juntamos todos los datos en un array para simplificar algoritmos. */
+/** Juntamos todos los @c global_arrow_data_t en un arreglo para evitar código duplicado. */
 global_arrow_data_t* all_global_arrow_data[4] = {&right_arrow_data, &down_arrow_data, &up_arrow_data, &left_arrow_data};
 
 /* Contadores. */
@@ -39,41 +44,46 @@ gui_counter_t score         = {4, score_counter_array};
 gui_counter_t level         = {1, level_counter_array};
 gui_counter_t lives_counter = {1, lives_counter_array};
 
-/* Pantalla actual */
+/** Pantalla actual. */
 screen_t current_screen = MAIN;
 
-/* Estado pausa. */
+/** Estado pausa. */
 uint8_t paused = 0;
+/**
+ * Estado modo debug. Si es 1 no se pierden vidas al cometer errores.
+ * Los desarrolladores eran muy malos jugando como para llegar hasta el último nivel,
+ * así que agregaron esta opción configurable en tiempo de ejecución.
+ */
 uint8_t debug  = 0;
 
-/* Modo actual de generación de secuencia. */
+/** Modo actual de generación de secuencia. */
 sequence_mode_t current_sequence_mode = NONE;
 
-/* Pasos de secuencia actual. */
+/** Cantidad de iteraciones de nueva secuencia restantes para pasar de nivel. */
 int16_t current_sequence_iteration = 0;
 
-/* Contador para saber cuándo se pueden introducir nuevas flechas. */
+/** Contador para saber cuándo se pueden introducir nuevas flechas. */
 uint8_t ticks_next_arrow = 0;
 
-/* Velocidad global */
+/** Velocidad global. Representa la cantidad de interrupciones de Timer A0 necesarias para bajar las flechas un pixel. */
 uint8_t speed = 4;
 
-/* Contador para saber si ya se pueden bajar las flechas. */
+/** Contador para saber si ya se pueden bajar las flechas. */
 uint8_t ticks_lower_arrows = 4;
 
-/* Vidas */
+/** Vidas restantes. */
 uint8_t lives = INIT_LIVES;
 
-/* Flag para dejar de mandar flechas al final del último nivel. */
+/** Flag para dejar de mandar flechas al final del último nivel. */
 uint8_t last_level_stop = 0;
 
-/* Scoreboard. */
+/** Scoreboard. */
 scores_t scores;
 
-/* Flag que indica si en el tick actual ya se perdieron vidas. */
+/** Flag que indica si en el tick actual ya se perdieron vidas. */
 uint8_t lost_lives = 0;
 
-/* Puntero a seed para generación de números pseudoaleatorios. */
+/** Puntero a seed para generación de números pseudoaleatorios. */
 uint16_t* rand_seed = 0;
 
 /*=============================*/
@@ -83,7 +93,7 @@ uint16_t* rand_seed = 0;
 /**
  * @brief Obtener número de nivel almacenado en el contador de niveles.
  * Convertido de caracter a entero sin signo.
- * Se usa en lugar de atoi porque no usa multiplicaciones.
+ * Se usa en lugar de @c alfobi_atoi() para evitar las multiplicaciones.
  *
  * @returns El número de nivel actual, como entero.
  * @pre level es un contador de un solo dígito.
@@ -96,7 +106,7 @@ uint8_t get_current_level(void) {
  * @brief Obtener struct de datos globales de la flecha según su dirección.
  *
  * @param direction La dirección de la flecha.
- * @return Un puntero al struct de datos correspondiente.
+ * @return Un puntero al struct de datos globales correspondiente.
  */
 global_arrow_data_t* get_arrow_data(arrow_direction_t direction) {
 
@@ -142,6 +152,7 @@ void main_menu(void) {
 
 /**
  * @brief Mostrar pantalla de información.
+ * Cambia el estado a @c INFO .
  */
 void show_info_screen(void) {
     current_screen = INFO;
@@ -165,8 +176,11 @@ void show_info_screen(void) {
 }
 
 /**
- * @brief Agregar puntaje actual al scoreboard.
- * Se inserta ordenado y se reemplaza el peor resultado si no hay espacio.
+ * @brief Agregar puntaje al scoreboard.
+ * Se inserta ordenado.
+ *
+ * @param score_to_add Puntaje a agregar al scoreboard.
+ * @note Se reemplaza el peor resultado si no hay espacio.
  */
 void add_to_scoreboard(uint16_t score_to_add) {
 
@@ -175,18 +189,19 @@ void add_to_scoreboard(uint16_t score_to_add) {
         return;
 
     /* Si hay lugar para una entrada nueva, la usamos. Si no, sobrescribimos el último. */
-    /* Tail es la posición de la nueva última flecha. */
+    /* tail es la posición siguiente al último resultado insertado. */
     uint8_t tail = scores.tail < SCORE_ARRAY_LENGTH ? scores.tail : scores.tail - 1;
 
     scores.array[tail] = score_to_add;
 
+    /* Bubble sort. */
     for (uint8_t i = tail; i; i--) {
         if (scores.array[i] <= scores.array[i-1])
             break;
 
         uint16_t aux = scores.array[i];
-        scores.array[i]    = scores.array[i-1];
-        scores.array[i-1]  = aux;
+        scores.array[i]   = scores.array[i-1];
+        scores.array[i-1] = aux;
     }
 
     if (scores.tail < SCORE_ARRAY_LENGTH) {
@@ -195,9 +210,10 @@ void add_to_scoreboard(uint16_t score_to_add) {
 }
 
 /**
- * @brief Mostrar pantalla de fin del juego.
+ * @brief Mostrar pantalla de fin de juego.
+ * Cambia el estado a @c GAME_OVER y agrega el resultado almacenado en el score al scoreboard.
  *
- * @param win Si pasó el último nivel debe valer 1. 0 en caso contrario.
+ * @param win 1 si es victoria, 0 si es derrota.
  */
 void game_over(uint8_t win) {
     current_screen = GAME_OVER;
@@ -215,6 +231,7 @@ void game_over(uint8_t win) {
 
 /**
  * @brief Mostrar pantalla del scoreboard.
+ * Cambia el estado a @c SCOREBOARD .
  */
 void show_scoreboard(void) {
     current_screen = SCOREBOARD;
@@ -252,6 +269,7 @@ void alternate_pause(void) {
 
 /**
  * @brief Decrementar contador de vidas y actualizar contador en el display.
+ * Ejecuta @c game_over() si la cantidad de vidas llega a 0.
  */
 void decrement_lives(void) {
     if (debug) return;
@@ -263,9 +281,9 @@ void decrement_lives(void) {
 }
 
 /**
- * @brief Dada una columna, baja todas las flechas una posición.
+ * @brief Dada una columna, baja todas las flechas un pixel.
  *
- * @param column Los datos de la columna correspondiente.
+ * @param column Los datos globales de la columna correspondiente.
  * @returns Retorna 0 si no bajaron flechas. 1 en otro caso.
  */
 uint8_t lower_column_arrows(global_arrow_data_t* column) {
@@ -452,9 +470,8 @@ void game_tick(void) {
 
 /**
  * @brief Agregar nueva flecha al juego.
- * 
+ *
  * @param arrow_data Los datos globales de la flecha a agregar.
- * 
  * @pre Hay un lugar disponible en la columna correspondiente.
  */
 void add_new_arrow(global_arrow_data_t* arrow_data) {
@@ -474,16 +491,13 @@ void add_new_arrow(global_arrow_data_t* arrow_data) {
  * @brief Sortear y setear el siguiente estado del juego según el nivel.
  */
 void next_game_state(void) {
-    uint8_t rand_int = rand() & 0x0F;
-    if (rand_int >= PROBABILITY_ARRAY_SIZE)
-        rand_int -= PROBABILITY_ARRAY_SIZE;
-
+    uint8_t rand_int = rand() & (PROBABILITY_ARRAY_SIZE - 1);
     current_sequence_mode = state_probability_array[get_current_level()-1][rand_int];
 }
 
 /**
- * @brief Generar siguiente paso de la secuencia con una determinada cantidad de flechas al mismo tiempo en la misma altura. Dibuja las flechas generadas.
- * Usa el modo de generación de secuencias global.
+ * @brief Generar siguiente paso de la secuencia y agregar las flechas generadas al juego.
+ * Usa el modo de generación de secuencias global, que determina la cantidad de flechas a generar al mismo tiempo.
  */
 void generate_arrows(void) {
     uint8_t column_number, column_number2;
@@ -491,39 +505,37 @@ void generate_arrows(void) {
     column_number = rand() & 0b11;
 
     switch (current_sequence_mode) {
-    case SINGLE:
-        // Mandamos la flecha por la columna seleccionada.
-        add_new_arrow(all_global_arrow_data[column_number]);
-        current_sequence_iteration -= 1;
-        break;
-    case DOUBLE:
-        // Sorteamos una columna que no sea la ya sorteada.
-        column_number2 = rand() & 0b11;
-        if (column_number == column_number2) {
-            column_number2 = (column_number + 1) & 0b11;
-        }
-        add_new_arrow(all_global_arrow_data[column_number]);
-        add_new_arrow(all_global_arrow_data[column_number2]);
-        current_sequence_iteration -= 2;
-        break;
-    case TRIPLE:
-        // Mandamos una flecha por cada columna, excepto por la que se sorteó.
-        for (uint8_t column = 0; column < 4; column++) {
-            if (column != column_number) {
+        case SINGLE:
+            add_new_arrow(all_global_arrow_data[column_number]);
+            current_sequence_iteration -= 1;
+            break;
+        case DOUBLE:
+            /* Sorteamos una columna que sea distinta a column_number. */
+            column_number2 = rand() & 0b11;
+            if (column_number == column_number2) {
+                column_number2 = (column_number + 1) & 0b11;
+            }
+            add_new_arrow(all_global_arrow_data[column_number]);
+            add_new_arrow(all_global_arrow_data[column_number2]);
+            current_sequence_iteration -= 2;
+            break;
+        case TRIPLE:
+            /* Mandamos una flecha por cada columna, excepto por la que se sorteó. */
+            for (uint8_t column = 0; column < 4; column++) {
+                if (column != column_number) {
+                    add_new_arrow(all_global_arrow_data[column]);
+                }
+            }
+            current_sequence_iteration -= 3;
+            break;
+        case QUAD:
+            for (uint8_t column = 0; column < 4; column++) {
                 add_new_arrow(all_global_arrow_data[column]);
             }
-        }
-        current_sequence_iteration -= 3;
-        break;
-    case QUAD:
-        for (uint8_t column = 0; column < 4; column++) {
-            add_new_arrow(all_global_arrow_data[column]);
-        }
-        current_sequence_iteration -= 4;
-        break;
-    case NONE: /* NONE */
-        next_game_state();
-        return;
+            current_sequence_iteration -= 4;
+            break;
+        default: /* NONE */
+            break;
     }
 
     next_game_state();
@@ -558,6 +570,7 @@ void next_sequence(void) {
 
 /**
  * @brief Inicializar los datos de la columna.
+ * Resetea el arreglo de flechas de la columna.
  * 
  * @param column_data Puntero a los datos de la columna.
  */
@@ -667,3 +680,5 @@ void set_scores(scores_t* scores_param) {
 void init_game_seed(uint16_t* seed_ptr) {
     rand_seed = seed_ptr;
 }
+
+/** @} */

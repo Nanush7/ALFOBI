@@ -1,4 +1,6 @@
 /**
+ * @addtogroup Game
+ * @{
  * @file game_data.h
  * @brief Módulo para manejo de configuración y estado del juego.
  */
@@ -11,7 +13,7 @@
 #define INIT_LIVES                       5
 #define VERTICAL_ARROW_SPACING           8 /**< Espacio vertical mínimo (en pixeles) entre dos flechas (de todas las columnas). */
 #define MAX_ARROW_COUNT_PER_COLUMN       6
-#define PROBABILITY_ARRAY_SIZE           16
+#define PROBABILITY_ARRAY_SIZE           16 /**< Debe ser una potencia de 2. */
 #define MAX_LEVEL                        8
 #define SCORE_ARRAY_LENGTH               9 /**< Si se aumenta por encima de 9, es necesario cambiar la lógica. */
 #define PRESS_TOLERANCE                  4
@@ -74,10 +76,8 @@ typedef enum {
 
 /** Flecha específica. */
 typedef struct {
-    /** Altura actual de la flecha. */
-    uint8_t height; 
-    /** 1 si debe ser tenida en cuenta por la lógica o 0 en caso contrario. */
-    uint8_t active;
+    uint8_t height; /**< Altura actual de la flecha. */
+    uint8_t active; /**< 1 si debe ser tenida en cuenta por la lógica o 0 en caso contrario. */
 } arrow_t;
 
 /** Datos globales para cada tipo de flecha. Contiene el arreglo de flechas de la columna correspondiente. */
@@ -112,3 +112,5 @@ sized_array_t get_template_outline(arrow_direction_t direction);
 sized_array_t get_template(arrow_direction_t direction);
 
 #endif /* GAME_DATA_H */
+
+/** @} */
