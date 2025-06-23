@@ -26,7 +26,7 @@ Proyecto de fin de curso de Sistemas Embebidos para Tiempo Real.
 
 La siguiente configuración fue testeada en Code Composer Studio v20.1.
 
-Se **debe** configurar el dialecto de C99:
+Se **debe** configurar el dialecto de C:
 
 1. Ir a propiedades del proyecto.
 2. En la ventana de propiedades ir a: Build > Tools > MSP430 Compiler > Advanced Options > Language Options.
@@ -49,13 +49,13 @@ Sacar los jumpers de P2.1, P2.3, P2.5 y P1.6. El jumper de P1.0 debe quedar pues
 
 ### Flash
 
-El juego permite guardar la tabla de resultados en memoria FLASH a demanda (presionando la tecla `1` mientras no se está en la pantalla de juego). Para esto, es necesario modificar el archivo `lnk_msp430g2553.cmd` como se explica más abajo. Notar que se puede omitir este paso para ejecutar el juego, pero en caso de no hacerlo, presionar la tecla `1` generará comportamientos indefinidos, potencialmente borrando parte de la sección de código en la memoria FLASH.
+El juego permite guardar la tabla de resultados en memoria FLASH a demanda (presionando la tecla `1` mientras no se está en la pantalla de juego). Para esto, es necesario modificar el archivo `lnk_msp430g2553.cmd` como se explica más abajo. Notar que se puede omitir este paso para ejecutar el juego, pero en caso de no hacerlo, presionar la tecla `1` generará comportamientos indefinidos, potencialmente borrando parte de la sección de código en la memoria FLASH. Además, ALFOBI intentará detectar que la FLASH no está configurada para hacer que el scoreboard funcione correctamente (evitando los datos desconocidos leídos de la FLASH) en modo no-persistente, pero no hay garantías de que funcione.
 
 1. En la sección donde se define el mapeo de la memoria, comentar o borrar la entrada (mapeo) FLASH.
 2. Agregar una nueva entrada donde estaba FLASH, de nombre `ALFOBI_SCORES`, que empiece en la misma dirección y tenga largo de 512 bytes (0x0200, equivalente a un segmento). Además, debe rellenarse con fill = 0x0000.
 3. Agregar otra entrada FLASH abajo de `ALFOBI_SCORES`, que empiece en el origen de `ALFOBI_SCORES` más 0x0200, de largo igual al que había en FLASH menos 0x0200.
 
-Por ejemplo, si en el archivo .cmd tenía:
+Por ejemplo, si el archivo .cmd tenía:
 ```c
 MEMORY
 {

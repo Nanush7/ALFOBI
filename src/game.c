@@ -9,7 +9,6 @@
 #include <keyboard.h>
 #include <assert_test.h>
 #include <stdlib.h>
-#include <string_utils.h>
 #include <flash.h>
 
 /*=========================*/
@@ -93,7 +92,6 @@ uint16_t* rand_seed = 0;
 /**
  * @brief Obtener número de nivel almacenado en el contador de niveles.
  * Convertido de caracter a entero sin signo.
- * Se usa en lugar de @c alfobi_atoi() para evitar las multiplicaciones.
  *
  * @returns El número de nivel actual, como entero.
  * @pre level es un contador de un solo dígito.
@@ -176,32 +174,73 @@ void show_info_screen(void) {
 }
 
 /**
- * @brief Agregar puntaje al scoreboard.
- * Se inserta ordenado.
+ * @brief Comparar arreglos de caracteres del mismo tamaño que representan números.
  *
- * @param score_to_add Puntaje a agregar al scoreboard.
+ * @param left_val  Valor a la izquierda.
+ * @param right_val Valor a la derecha.
+ * @param size      Tamaño de los arreglos.
+ * @return -1 si left_val < right_val, 0 si left_val == right_val, 1 si left_val > right_val.
+ * @pre sizeof(left_val) == sizeof(right_val).
+ * @pre El digito más significativo está en la primera posición de los arreglos.
+ */
+int8_t compare_digit_arrays(uint8_t* left_val, uint8_t* right_val, uint8_t size) {
+
+    int8_t res = 0;
+    for (uint8_t i = 0; i < size; i++) {
+        if (left_val[i] < right_val[i])
+            res = -1;
+        else if (left_val[i] > right_val[i])
+            res = 1;
+        else
+            continue; /* left[i] == right[i] */
+        break;
+    }
+
+    return res;
+}
+
+/**
+ * @brief Copiar arreglo de caracteres.
+ *
+ * @param src  El arreglo a copiar.
+ * @param dst  El arreglo destino.
+ * @param size El tamaño de los arreglos.
+ * @pre sizeof(src) == sizeof(dst).
+ */
+void copy_array(uint8_t* src, uint8_t* dst, uint8_t size) {
+    for (uint8_t i = 0; i < size; i++) {
+        dst[i] = src[i];
+    }
+}
+
+/**
+ * @brief Agregar puntaje al scoreboard.
+ * Se inserta el score actual. El scoreboard queda ordenado.
+ *
  * @note Se reemplaza el peor resultado si no hay espacio.
  */
-void add_to_scoreboard(uint16_t score_to_add) {
+void add_to_scoreboard() {
+    ASSERT(SCORE_ARRAY_LENGTH == 9); /* Requiere cambios en la lógica. */
 
     /* Si la tabla está llena y el score es peor que el último, no se agrega. */
-    if (scores.tail == SCORE_ARRAY_LENGTH && scores.array[scores.tail - 1] > score_to_add)
+    if (scores.tail == SCORE_ARRAY_LENGTH && compare_digit_arrays((uint8_t*)scores.array[scores.tail - 1], score.digits, 4) == 1)
         return;
 
     /* Si hay lugar para una entrada nueva, la usamos. Si no, sobrescribimos el último. */
-    /* tail es la posición siguiente al último resultado insertado. */
+    /* scores.tail es la posición siguiente al último resultado insertado. */
     uint8_t tail = scores.tail < SCORE_ARRAY_LENGTH ? scores.tail : scores.tail - 1;
 
-    scores.array[tail] = score_to_add;
+    copy_array(score.digits, (uint8_t*)scores.array[tail], 4);
 
     /* Bubble sort. */
     for (uint8_t i = tail; i; i--) {
-        if (scores.array[i] <= scores.array[i-1])
+        if (compare_digit_arrays((uint8_t*)scores.array[i], (uint8_t*)scores.array[i-1], 4) <= 0)
             break;
 
-        uint16_t aux = scores.array[i];
-        scores.array[i]   = scores.array[i-1];
-        scores.array[i-1] = aux;
+        uint8_t aux[4];
+        copy_array((uint8_t*)scores.array[i], aux, 4);
+        copy_array((uint8_t*)scores.array[i-1], (uint8_t*)scores.array[i], 4);
+        copy_array(aux, (uint8_t*)scores.array[i-1], 4);
     }
 
     if (scores.tail < SCORE_ARRAY_LENGTH) {
@@ -226,7 +265,7 @@ void game_over(uint8_t win) {
     else
         render_chars("PERDISTE", 8, 0, 73);
 
-    add_to_scoreboard(alfobi_atoi(score.digits, score.digit_amount));
+    add_to_scoreboard();
 }
 
 /**
@@ -248,11 +287,9 @@ void show_scoreboard(void) {
 
     uint8_t score_entry_height = 30;
     for (uint8_t i = 0; i < scores.tail; i++) {
-        uint8_t score_str[4];
-        alfobi_itoa(scores.array[i], score_str, 4);
         uint8_t index_str[2] = {'1' + i , '-'};
         render_chars(index_str, 1, 4, score_entry_height);
-        render_chars(score_str, 4, 15, score_entry_height);
+        render_chars(scores.array[i], 4, 15, score_entry_height);
         score_entry_height += 10;
     }
 }
@@ -675,6 +712,18 @@ void init_game(void) {
 
 void set_scores(scores_t* scores_param) {
     scores = *scores_param;
+
+    /* Primera condición: nunca se han guardado los scores previamente y es necesario pasar las entradas de 0 a '0'. */
+    /* Debido al fill = 0x0000 del .cmd */
+    /* Segunda condición: en caso de que hubiera basura por no estar configurada la FLASH (en el .cmd). */
+    if (!scores.tail || scores.tail > SCORE_ARRAY_LENGTH) {
+        scores.tail = 0;
+        for (uint8_t score = 0; score < SCORE_ARRAY_LENGTH; score++) {
+            for (uint8_t digit = 0; digit < 4; digit++) {
+                scores.array[score][digit] = '0';
+            }
+        }
+    }
 }
 
 void init_game_seed(uint16_t* seed_ptr) {

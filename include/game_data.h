@@ -62,7 +62,9 @@ extern const uint8_t speed_per_level[MAX_LEVEL];
 
 /** Representación de scoreboard como arreglo con tope. */
 typedef struct {
-    uint16_t array[SCORE_ARRAY_LENGTH];
+    /** Si bien los valores se usan como caracteres, tienen que estar alineados para ser almacenados en flash. */
+    uint16_t array[SCORE_ARRAY_LENGTH][4];
+    /** Tope de @c array . */
     uint16_t tail;
 } scores_t;
 
